@@ -50,7 +50,7 @@ export const useOnlineGame = (gameId: string) => {
         .from('chess_games')
         .select('*')
         .eq('id', gameId)
-        .single();
+        .maybeSingle();
       
       let game = existingGame;
       let color: PieceColor = 'white';
@@ -70,6 +70,16 @@ export const useOnlineGame = (gameId: string) => {
           color = 'white';
           opponentJoined = false;
           console.log("First player joining as white");
+        } else if (game.white_player === userId) {
+          // Player is already white
+          color = 'white';
+          opponentJoined = !!game.black_player && game.black_player !== userId;
+          console.log("Already white, black exists:", !!game.black_player);
+        } else if (game.black_player === userId) {
+          // Player is already black
+          color = 'black';
+          opponentJoined = !!game.white_player && game.white_player !== userId;
+          console.log("Already black, white exists:", !!game.white_player);
         } else if (!game.white_player) {
           // White slot available
           await supabase
@@ -77,7 +87,7 @@ export const useOnlineGame = (gameId: string) => {
             .update({ white_player: userId })
             .eq('id', gameId);
           color = 'white';
-          opponentJoined = !!game.black_player;
+          opponentJoined = !!game.black_player && game.black_player !== userId;
           console.log("Joining as white, black exists:", !!game.black_player);
         } else if (!game.black_player) {
           // Black slot available
@@ -86,23 +96,23 @@ export const useOnlineGame = (gameId: string) => {
             .update({ black_player: userId })
             .eq('id', gameId);
           color = 'black';
-          opponentJoined = true;
+          opponentJoined = !!game.white_player && game.white_player !== userId;
           console.log("Joining as black, white exists:", !!game.white_player);
-        } else if (game.white_player === userId) {
-          // Player is already white
-          color = 'white';
-          opponentJoined = !!game.black_player;
-          console.log("Already white, black exists:", !!game.black_player);
-        } else if (game.black_player === userId) {
-          // Player is already black
-          color = 'black';
-          opponentJoined = !!game.white_player;
-          console.log("Already black, white exists:", !!game.white_player);
         } else {
-          // Game is full, but allow spectating
-          color = 'white'; // spectator defaults to white view
-          opponentJoined = true;
-          console.log("Game full, spectating as white");
+          // Game is full
+          // Determine if player is one of the players
+          if (game.white_player === userId) {
+            color = 'white';
+            opponentJoined = !!game.black_player && game.black_player !== userId;
+          } else if (game.black_player === userId) {
+            color = 'black';
+            opponentJoined = !!game.white_player && game.white_player !== userId;
+          } else {
+            // Spectator mode - default to white view
+            color = 'white';
+            opponentJoined = true;
+            console.log("Game full, spectating as white");
+          }
         }
         
         // Re-fetch the updated game data
@@ -110,15 +120,15 @@ export const useOnlineGame = (gameId: string) => {
           .from('chess_games')
           .select('*')
           .eq('id', gameId)
-          .single();
+          .maybeSingle();
         
         if (updatedGame) {
           game = updatedGame;
           // Update opponent connection status based on fresh data
           if (color === 'white') {
-            opponentJoined = !!updatedGame.black_player;
+            opponentJoined = !!updatedGame.black_player && updatedGame.black_player !== userId;
           } else {
-            opponentJoined = !!updatedGame.white_player;
+            opponentJoined = !!updatedGame.white_player && updatedGame.white_player !== userId;
           }
           console.log("Updated game data:", updatedGame, "opponent joined:", opponentJoined);
         }
@@ -141,11 +151,12 @@ export const useOnlineGame = (gameId: string) => {
           .from('chess_games')
           .select('*')
           .eq('id', gameId)
-          .single();
+          .maybeSingle();
         
         if (newGame) {
           game = newGame;
           color = 'white';
+          opponentJoined = false;
           console.log("Created new game as white");
         }
       }
@@ -154,7 +165,7 @@ export const useOnlineGame = (gameId: string) => {
       setIsConnected(true);
       setOpponentConnected(opponentJoined);
       setWaitingForOpponent(!opponentJoined);
-      setIsPlayerTurn(color === 'white'); // white goes first
+      setIsPlayerTurn(color === 'white' || (game?.current_turn === color)); // white goes first or match current turn
       
       console.log(`Joined game ${gameId} as ${color}, opponent connected: ${opponentJoined}`);
       
@@ -217,6 +228,8 @@ export const useOnlineGame = (gameId: string) => {
         filter: `id=eq.${gameId}`
       }, (payload) => {
         const updatedGame = payload.new;
+        console.log("Received game update:", updatedGame);
+        
         if (updatedGame?.board) {
           const deserializedBoard = deserializeChessBoard(updatedGame.board);
           callback(deserializedBoard);
@@ -226,11 +239,11 @@ export const useOnlineGame = (gameId: string) => {
         }
 
         // Check if opponent has connected or disconnected
-        if (playerColorRef.current === 'white' && updatedGame?.black_player) {
+        if (playerColorRef.current === 'white' && updatedGame?.black_player && updatedGame.black_player !== userId) {
           setOpponentConnected(true);
           setWaitingForOpponent(false);
           console.log("Black player joined, no longer waiting");
-        } else if (playerColorRef.current === 'black' && updatedGame?.white_player) {
+        } else if (playerColorRef.current === 'black' && updatedGame?.white_player && updatedGame.white_player !== userId) {
           setOpponentConnected(true);
           setWaitingForOpponent(false);
           console.log("White player joined, no longer waiting");
@@ -242,27 +255,40 @@ export const useOnlineGame = (gameId: string) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [gameId]);
+  }, [gameId, userId]);
   
-  // Check opponent connection status
+  // Check opponent connection status regularly
   useEffect(() => {
-    if (!gameId || !isConnected || !playerColorRef.current) return;
+    if (!gameId || !isConnected || !playerColorRef.current || !userId) return;
     
     const checkOpponentStatus = async () => {
-      const { data: game } = await supabase
-        .from('chess_games')
-        .select('white_player, black_player')
-        .eq('id', gameId)
-        .single();
+      try {
+        const { data: game } = await supabase
+          .from('chess_games')
+          .select('white_player, black_player')
+          .eq('id', gameId)
+          .maybeSingle();
       
-      if (game) {
-        const isWhitePlayer = playerColorRef.current === 'white';
-        const opponentExists = isWhitePlayer ? !!game.black_player : !!game.white_player;
-        
-        setOpponentConnected(opponentExists);
-        setWaitingForOpponent(!opponentExists);
-        
-        console.log(`Status check: I am ${isWhitePlayer ? 'white' : 'black'}, opponent exists: ${opponentExists}`);
+        if (game) {
+          const isWhitePlayer = playerColorRef.current === 'white';
+          let opponentExists = false;
+          
+          if (isWhitePlayer) {
+            // White player checking if black exists
+            opponentExists = !!game.black_player && game.black_player !== userId;
+          } else {
+            // Black player checking if white exists
+            opponentExists = !!game.white_player && game.white_player !== userId;
+          }
+          
+          if (opponentExists !== opponentConnected) {
+            console.log(`Opponent status changed from ${opponentConnected} to ${opponentExists}`);
+            setOpponentConnected(opponentExists);
+            setWaitingForOpponent(!opponentExists);
+          }
+        }
+      } catch (error) {
+        console.error("Error checking opponent status:", error);
       }
     };
     
@@ -273,7 +299,7 @@ export const useOnlineGame = (gameId: string) => {
     return () => {
       clearInterval(interval);
     };
-  }, [gameId, isConnected]);
+  }, [gameId, isConnected, userId, opponentConnected]);
   
   return {
     isConnected,

@@ -1,10 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ChessBoard from '@/components/ChessBoard';
 import GameInfo from '@/components/GameInfo';
-import { Position, ChessBoard as ChessBoardType, PieceColor, deserializeChessBoard } from '@/models/ChessTypes';
-import { initializeBoard, getPieceAtPosition, getValidMovesForPiece, makeMove } from '@/utils/chessUtils';
+import { Position, ChessBoard as ChessBoardType, PieceColor } from '@/models/ChessTypes';
+import { getPieceAtPosition, getValidMovesForPiece, makeMove } from '@/utils/chessUtils';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import { useOnlineGame } from '@/hooks/useOnlineGame';
@@ -19,7 +18,7 @@ const OnlineGame: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [playerColor, setPlayerColor] = useState<PieceColor | null>(null);
-  const [board, setBoard] = useState<ChessBoardType>(initializeBoard());
+  const [board, setBoard] = useState<ChessBoardType | null>(null);
   const isMobile = useIsMobile();
   const [showJoinedNotification, setShowJoinedNotification] = useState(false);
   
@@ -32,15 +31,17 @@ const OnlineGame: React.FC = () => {
     subscribeToGameChanges,
     joinGame
   } = useOnlineGame(gameId || '');
-  
+
   useEffect(() => {
     if (!gameId) return;
     
     // Join or create the game when component mounts
     const setupGame = async () => {
       try {
-        console.log("Setting up game...");
+        console.log("Setting up game with ID:", gameId);
         const { color, initialBoard, opponentJoined } = await joinGame();
+        
+        console.log("Game setup complete:", { color, opponentJoined });
         setPlayerColor(color);
         
         if (initialBoard) {
@@ -56,8 +57,6 @@ const OnlineGame: React.FC = () => {
         
         setShowJoinedNotification(true);
         setTimeout(() => setShowJoinedNotification(false), 3000);
-        
-        console.log(`Joined as ${color}, opponent joined: ${opponentJoined}`);
         
         if (opponentJoined) {
           toast({
@@ -78,7 +77,6 @@ const OnlineGame: React.FC = () => {
     
     setupGame();
     
-    // Subscribe to game changes
     const unsubscribe = subscribeToGameChanges((newBoard) => {
       console.log("Got board update from subscription");
       setBoard(newBoard);
@@ -124,12 +122,12 @@ const OnlineGame: React.FC = () => {
   }, [opponentConnected, waitingForOpponent, toast]);
   
   // Check if it's the current player's turn
-  const isTurnToPlay = playerColor === board.currentTurn && opponentConnected;
+  const isTurnToPlay = board && playerColor === board.currentTurn && opponentConnected;
   
   // Handle click on a square
   const handleSquareClick = (position: Position) => {
     // Only allow moves if it's the player's turn
-    if (!isTurnToPlay || board.isCheckmate) {
+    if (!isTurnToPlay || !board || board.isCheckmate) {
       return;
     }
     
@@ -193,13 +191,15 @@ const OnlineGame: React.FC = () => {
   
   // Reset the game
   const handleReset = async () => {
-    const newBoard = initializeBoard();
-    setBoard(newBoard);
-    await updateGameState(newBoard);
-    toast({
-      title: "New Game",
-      description: "The board has been reset. White moves first.",
-    });
+    const newBoard = board ? { ...board, selectedPiece: null, validMoves: [] } : null;
+    if (newBoard) {
+      setBoard(newBoard);
+      await updateGameState(newBoard);
+      toast({
+        title: "Game Reset",
+        description: "The board has been reset.",
+      });
+    }
   };
   
   // Copy game ID to clipboard
@@ -382,11 +382,13 @@ const OnlineGame: React.FC = () => {
           >
             <Card className="p-3 bg-slate-800/50 backdrop-blur-sm border border-white/10 shadow-xl">
               <CardContent className="p-0">
-                <ChessBoard 
-                  board={board} 
-                  onSquareClick={handleSquareClick}
-                  flipped={flippedBoard}
-                />
+                {board && (
+                  <ChessBoard 
+                    board={board} 
+                    onSquareClick={handleSquareClick}
+                    flipped={flippedBoard}
+                  />
+                )}
               </CardContent>
             </Card>
           </motion.div>
@@ -398,12 +400,14 @@ const OnlineGame: React.FC = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
           >
-            <GameInfo 
-              board={board} 
-              onReset={handleReset}
-              onResign={handleResign}
-              showMoveControls={true}
-            />
+            {board && (
+              <GameInfo 
+                board={board} 
+                onReset={handleReset}
+                onResign={handleResign}
+                showMoveControls={true}
+              />
+            )}
             
             {/* Player Badge */}
             <motion.div 

@@ -1,1 +1,8 @@
+
 project_id = "qennrndhjqqbysbwqfqw"
+
+[realtime]
+enabled = true
+
+[realtime.postgres_changes]
+enabled = true
