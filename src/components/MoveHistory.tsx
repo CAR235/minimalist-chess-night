@@ -28,37 +28,36 @@ const MoveHistory: React.FC<MoveHistoryProps> = ({
   }
 
   return (
-    <ScrollArea className="h-full max-h-[300px] w-full">
+    <ScrollArea className="h-full max-h-[300px]">
       <div className="p-2">
-        <h3 className="text-sm font-semibold mb-2">Move History</h3>
         <Table>
           <TableHeader>
-            <TableRow className="hover:bg-transparent">
-              <TableHead className="w-8 text-center">No.</TableHead>
-              <TableHead>White</TableHead>
-              <TableHead>Black</TableHead>
+            <TableRow className="hover:bg-transparent border-border">
+              <TableHead className="w-8 text-center py-2 text-muted-foreground">No.</TableHead>
+              <TableHead className="py-2 text-muted-foreground">White</TableHead>
+              <TableHead className="py-2 text-muted-foreground">Black</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {moveRows.map((row, idx) => (
               <TableRow 
                 key={idx} 
-                className="border-b border-border/30 hover:bg-muted/5"
+                className="border-b border-border/30 hover:bg-secondary/20"
               >
-                <TableCell className="py-1 text-xs text-center text-muted-foreground">
+                <TableCell className="py-1.5 text-xs text-center text-muted-foreground">
                   {idx + 1}.
                 </TableCell>
                 <TableCell 
-                  className={`py-1 px-2 ${currentMove === idx * 2 ? 'bg-primary/10' : ''} 
-                  hover:bg-primary/5 cursor-pointer rounded`}
+                  className={`py-1.5 px-2 ${currentMove === idx * 2 ? 'bg-primary/10' : ''} 
+                  hover:bg-secondary/30 cursor-pointer rounded-sm`}
                   onClick={() => onMoveClick?.(idx * 2)}
                 >
                   {formatMove(row[0])}
                 </TableCell>
                 {row[1] ? (
                   <TableCell 
-                    className={`py-1 px-2 ${currentMove === idx * 2 + 1 ? 'bg-primary/10' : ''} 
-                    hover:bg-primary/5 cursor-pointer rounded`}
+                    className={`py-1.5 px-2 ${currentMove === idx * 2 + 1 ? 'bg-primary/10' : ''} 
+                    hover:bg-secondary/30 cursor-pointer rounded-sm`}
                     onClick={() => onMoveClick?.(idx * 2 + 1)}
                   >
                     {formatMove(row[1])}
@@ -91,8 +90,7 @@ const formatMove = (move: Move): string => {
   // Capture notation
   const capture = move.capturedPiece ? "x" : "";
   
-  // Check or checkmate notation - We need to fix this part
-  // Instead of accessing properties that don't exist on Move, we'll rely on the Move properties we have
+  // Check or checkmate notation
   let checkSymbol = "";
   
   return `${pieceSymbol}${from}${capture}${to}${checkSymbol}`;

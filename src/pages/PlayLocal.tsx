@@ -158,78 +158,84 @@ const PlayLocal: React.FC = () => {
   const flippedBoard = playerColor === 'black';
 
   return (
-    <div className="min-h-screen flex flex-col items-center bg-chess-background p-4">
-      <motion.div 
-        className="mb-6 w-full max-w-6xl"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <div className="flex flex-wrap justify-between items-center">
-          <Button 
-            variant="ghost" 
-            className="text-white/70 hover:text-white" 
-            onClick={() => navigate('/local-game')}
-          >
-            <ChevronLeft className="mr-2 h-4 w-4" />
-            Change Settings
-          </Button>
-          
-          <div className="flex items-center ml-auto mr-2">
-            <div className="bg-neutral-800 py-1 px-3 rounded flex items-center">
-              <Brain className="h-4 w-4 text-amber-400 mr-2" />
-              <span className="text-sm">
-                {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)} CPU
-              </span>
+    <div className="min-h-screen bg-background text-foreground">
+      {/* Header */}
+      <div className="border-b border-border pb-4">
+        <div className="container max-w-6xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <Button 
+              variant="ghost" 
+              onClick={() => navigate('/local-game')}
+              className="hover:bg-secondary"
+            >
+              <ChevronLeft className="mr-2 h-4 w-4" />
+              Back to Settings
+            </Button>
+            
+            <div className="flex items-center ml-auto">
+              <div className="bg-secondary py-2 px-3 rounded flex items-center shadow-sm">
+                <Brain className="h-4 w-4 text-amber-400 mr-2" />
+                <span className="text-sm font-medium">
+                  {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)} CPU
+                </span>
+              </div>
             </div>
           </div>
         </div>
-        
-        <div className="bg-neutral-800 p-3 rounded-lg mt-4 flex items-center">
+      </div>
+
+      {/* Game status bar */}
+      <div className="border-b border-border/60 bg-secondary/30">
+        <div className="container max-w-6xl mx-auto px-4 py-3">
           <motion.div 
             animate={{ 
               opacity: isPlayerTurn ? 1 : 0.7,
               scale: isPlayerTurn ? 1 : 0.98,
             }}
             transition={{ duration: 0.3 }}
-            className="font-medium text-white"
+            className="flex items-center"
           >
-            {isPlayerTurn 
-              ? "Your turn" 
-              : "CPU is thinking..."
-            }
+            <div className="font-medium">
+              {isPlayerTurn 
+                ? "Your turn" 
+                : "CPU is thinking..."
+              }
+            </div>
+            <div className="mx-2 text-muted-foreground">•</div>
+            <div>Playing as {playerColor === 'white' ? 'White' : 'Black'}</div>
           </motion.div>
-          <span className="mx-2 text-neutral-500">•</span>
-          <span className="text-white">Playing as {playerColor === 'white' ? 'White' : 'Black'}</span>
         </div>
-      </motion.div>
+      </div>
       
-      <div className="flex flex-col lg:flex-row items-start gap-6 w-full max-w-6xl">
-        <motion.div 
-          className="w-full lg:w-2/3"
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          <Card className="p-2 bg-neutral-900 border-neutral-700">
-            <ChessBoard 
+      {/* Main content */}
+      <div className="container max-w-6xl mx-auto px-4 py-8">
+        <div className="flex flex-col lg:flex-row items-start gap-6">
+          <motion.div 
+            className="w-full lg:w-2/3"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <Card className="p-2 border border-border shadow-lg bg-card">
+              <ChessBoard 
+                board={board} 
+                onSquareClick={handleSquareClick}
+                flipped={flippedBoard}
+              />
+            </Card>
+          </motion.div>
+          <motion.div 
+            className="w-full lg:w-1/3"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            <GameInfo 
               board={board} 
-              onSquareClick={handleSquareClick}
-              flipped={flippedBoard}
+              onReset={handleReset} 
             />
-          </Card>
-        </motion.div>
-        <motion.div 
-          className="w-full lg:w-1/3"
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-        >
-          <GameInfo 
-            board={board} 
-            onReset={handleReset} 
-          />
-        </motion.div>
+          </motion.div>
+        </div>
       </div>
     </div>
   );

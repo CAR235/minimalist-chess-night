@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 interface Props {
   board: ChessBoardType;
   onSquareClick: (position: Position) => void;
-  flipped?: boolean; // Add flipped prop for multiplayer mode
+  flipped?: boolean;
 }
 
 const ChessBoard: React.FC<Props> = ({ board, onSquareClick, flipped = false }) => {
@@ -64,7 +64,7 @@ const ChessBoard: React.FC<Props> = ({ board, onSquareClick, flipped = false }) 
 
   return (
     <motion.div 
-      className="w-full aspect-square border border-gray-700 rounded overflow-hidden shadow-lg"
+      className="w-full aspect-square overflow-hidden shadow-md rounded-md border border-border"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
