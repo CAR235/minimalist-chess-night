@@ -65,7 +65,7 @@ const ChessBoard: React.FC<Props> = ({ board, onSquareClick, flipped = false }) 
 
   return (
     <motion.div 
-      className="w-full aspect-square overflow-hidden shadow-lg rounded-md border border-gray-400"
+      className="w-full aspect-square overflow-hidden rounded-md border-2 border-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.15)]"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}

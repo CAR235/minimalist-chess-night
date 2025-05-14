@@ -52,11 +52,12 @@
   align-items: center;
   font-size: calc(min(8vw, 40px));
   user-select: none;
-  transition: transform 0.1s ease;
+  transition: transform 0.1s ease, filter 0.2s ease;
 }
 
 .chess-piece:hover {
   transform: scale(1.1);
+  filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.6));
 }
 
 @media (min-width: 768px) {

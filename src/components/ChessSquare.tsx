@@ -20,12 +20,12 @@ const ChessSquare: React.FC<ChessSquareProps> = ({
   isValidMove,
   onClick,
 }) => {
-  // Use classic chess board colors - true black and white
-  let bgColor = isLight ? 'bg-[#f0d9b5]' : 'bg-[#b58863]';
+  // Use a more modern and sleek color scheme that matches the project's amber and dark theme
+  let bgColor = isLight ? 'bg-[#3D3A41]' : 'bg-[#262428]';
   
-  // Apply highlighting styles
+  // Apply highlighting styles with amber tones to match the project
   if (isSelected) {
-    bgColor = 'bg-blue-300';
+    bgColor = 'bg-amber-500/40';
   }
 
   // Combine all of our styles
@@ -36,20 +36,20 @@ const ChessSquare: React.FC<ChessSquareProps> = ({
       <div className="absolute inset-0 flex items-center justify-center">
         {piece && <ChessPiece piece={piece} />}
         
-        {/* Show valid move indicator */}
+        {/* Show valid move indicator with amber color */}
         {isValidMove && (
-          <div className="absolute w-1/4 h-1/4 rounded-full bg-green-500/50"></div>
+          <div className="absolute w-1/4 h-1/4 rounded-full bg-amber-400/50 valid-move-indicator"></div>
         )}
         
-        {/* Show row/column notations */}
+        {/* Show row/column notations with amber tint */}
         {position.col === 0 && (
-          <span className={`absolute bottom-0 left-1 text-xs ${isLight ? 'text-[#b58863]' : 'text-[#f0d9b5]'}`}>
+          <span className={`absolute bottom-0 left-1 text-xs ${isLight ? 'text-amber-300/40' : 'text-amber-300/30'}`}>
             {8 - position.row}
           </span>
         )}
         
         {position.row === 7 && (
-          <span className={`absolute bottom-0 right-1 text-xs ${isLight ? 'text-[#b58863]' : 'text-[#f0d9b5]'}`}>
+          <span className={`absolute bottom-0 right-1 text-xs ${isLight ? 'text-amber-300/40' : 'text-amber-300/30'}`}>
             {String.fromCharCode(97 + position.col)}
           </span>
         )}
