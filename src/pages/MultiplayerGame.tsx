@@ -1,12 +1,13 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
-import { Copy, Users, ArrowRight, Clock, ChevronLeft } from 'lucide-react';
+import { Copy, Users, ArrowRight, Clock, ChevronLeft, ChevronsRight } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { motion } from 'framer-motion';
 
 const MultiplayerGame: React.FC = () => {
   const [gameId, setGameId] = useState<string>('');
@@ -50,8 +51,43 @@ const MultiplayerGame: React.FC = () => {
     }
   };
 
+  // Creating floating pieces for background animation
+  const floatingPieces = [
+    { piece: '♟', delay: 0, x: '10%', y: '10%' },
+    { piece: '♞', delay: 1.2, x: '80%', y: '15%' },
+    { piece: '♝', delay: 0.8, x: '20%', y: '80%' },
+    { piece: '♜', delay: 2, x: '85%', y: '75%' },
+    { piece: '♛', delay: 1.5, x: '50%', y: '25%' },
+    { piece: '♚', delay: 0.5, x: '65%', y: '90%' },
+  ];
+
   return (
-    <div className="min-h-screen bg-chess-background">
+    <div className="min-h-screen bg-chess-background relative overflow-hidden">
+      {/* Animated background pieces */}
+      {floatingPieces.map((item, index) => (
+        <motion.div
+          key={index}
+          className="absolute text-4xl opacity-5 pointer-events-none text-white"
+          initial={{ x: item.x, y: item.y, opacity: 0 }}
+          animate={{ 
+            opacity: 0.05, 
+            y: [`${parseFloat(item.y) - 5}%`, `${parseFloat(item.y) + 5}%`, `${parseFloat(item.y) - 5}%`]
+          }}
+          transition={{
+            y: {
+              duration: 8,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: item.delay
+            },
+            opacity: { duration: 2, delay: item.delay }
+          }}
+        >
+          {item.piece}
+        </motion.div>
+      ))}
+
+      {/* Main content */}
       <div className="max-w-4xl mx-auto p-6">
         <div className="flex items-center mb-8">
           <Button 
@@ -65,17 +101,27 @@ const MultiplayerGame: React.FC = () => {
           <h1 className="text-3xl font-bold text-white">Chess Multiplayer</h1>
         </div>
         
-        <div className="bg-gradient-to-br from-neutral-800/80 to-neutral-900/80 rounded-xl shadow-2xl border border-neutral-700/50 backdrop-blur-sm">
+        <motion.div 
+          className="bg-gradient-to-br from-neutral-800/90 to-neutral-900/95 rounded-xl shadow-2xl border border-neutral-700/50 backdrop-blur-sm"
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.5 }}
+        >
           <Tabs defaultValue="create" className="w-full">
             <div className="p-4 border-b border-neutral-700/50">
               <TabsList className="grid w-full grid-cols-2 bg-neutral-800">
-                <TabsTrigger value="create">Create Game</TabsTrigger>
-                <TabsTrigger value="join">Join Game</TabsTrigger>
+                <TabsTrigger value="create" className="data-[state=active]:bg-amber-600 data-[state=active]:text-white">Create Game</TabsTrigger>
+                <TabsTrigger value="join" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">Join Game</TabsTrigger>
               </TabsList>
             </div>
             
             <TabsContent value="create" className="p-6">
-              <div className="text-center mb-8">
+              <motion.div 
+                className="text-center mb-8"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+              >
                 <div className="w-16 h-16 rounded-full bg-amber-500/20 mx-auto mb-4 flex items-center justify-center">
                   <Users className="h-8 w-8 text-amber-500" />
                 </div>
@@ -83,52 +129,70 @@ const MultiplayerGame: React.FC = () => {
                 <p className="text-neutral-400 max-w-md mx-auto">
                   Generate a unique game code and share it with someone you want to play with
                 </p>
-              </div>
+              </motion.div>
               
-              <Button 
-                className="w-full py-6 text-lg bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 mb-8" 
-                onClick={createGame}
-                size="lg"
+              <motion.div
+                initial={{ y: 10, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.4 }}
               >
-                Generate Game Code
-              </Button>
+                <Button 
+                  className="w-full py-6 text-lg bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 mb-8 group" 
+                  onClick={createGame}
+                  size="lg"
+                >
+                  <span>Generate Game Code</span>
+                  <ChevronsRight className="ml-2 h-5 w-5 opacity-70 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </motion.div>
               
               {createdGameId && (
-                <Card className="border border-emerald-500/30 bg-neutral-800/70 shadow-lg">
-                  <CardHeader>
-                    <CardTitle className="text-emerald-500">Game Created!</CardTitle>
-                    <CardDescription>Share this code with your opponent:</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="mb-4">
-                      <div className="flex items-center gap-2">
-                        <div className="bg-neutral-700 p-4 rounded-md flex-1 text-center text-white font-mono text-3xl tracking-wider">
-                          {createdGameId}
+                <motion.div
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                >
+                  <Card className="border border-emerald-500/30 bg-neutral-800/70 shadow-lg">
+                    <CardHeader>
+                      <CardTitle className="text-emerald-500">Game Created!</CardTitle>
+                      <CardDescription>Share this code with your opponent:</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="mb-4">
+                        <div className="flex items-center gap-2">
+                          <div className="bg-neutral-700 p-4 rounded-md flex-1 text-center text-white font-mono text-3xl tracking-wider">
+                            {createdGameId}
+                          </div>
+                          <Button 
+                            variant="outline" 
+                            size="icon" 
+                            className="h-12 w-12 bg-neutral-700 border-neutral-600 hover:bg-neutral-600 hover:text-emerald-400 transition-all" 
+                            onClick={copyToClipboard}
+                          >
+                            <Copy className="h-5 w-5" />
+                          </Button>
                         </div>
-                        <Button 
-                          variant="outline" 
-                          size="icon" 
-                          className="h-12 w-12 bg-neutral-700 border-neutral-600" 
-                          onClick={copyToClipboard}
-                        >
-                          <Copy className="h-5 w-5" />
-                        </Button>
                       </div>
-                    </div>
-                    
-                    <Button 
-                      className="w-full flex items-center justify-center gap-2" 
-                      onClick={() => navigate(`/game/${createdGameId}`)}
-                    >
-                      Start Game <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  </CardContent>
-                </Card>
+                      
+                      <Button 
+                        className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800" 
+                        onClick={() => navigate(`/game/${createdGameId}`)}
+                      >
+                        Start Game <ArrowRight className="h-4 w-4" />
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </motion.div>
               )}
             </TabsContent>
             
             <TabsContent value="join" className="p-6">
-              <div className="text-center mb-8">
+              <motion.div 
+                className="text-center mb-8"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+              >
                 <div className="w-16 h-16 rounded-full bg-blue-500/20 mx-auto mb-4 flex items-center justify-center">
                   <Clock className="h-8 w-8 text-blue-500" />
                 </div>
@@ -136,9 +200,14 @@ const MultiplayerGame: React.FC = () => {
                 <p className="text-neutral-400 max-w-md mx-auto">
                   Enter the game code shared with you to join a match
                 </p>
-              </div>
+              </motion.div>
               
-              <div className="bg-neutral-800 p-6 rounded-lg border border-neutral-700 mb-6">
+              <motion.div
+                className="bg-neutral-800 p-6 rounded-lg border border-neutral-700 mb-6"
+                initial={{ y: 10, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.4 }}
+              >
                 <label className="block text-sm font-medium text-neutral-400 mb-2">
                   Enter Game Code:
                 </label>
@@ -156,14 +225,19 @@ const MultiplayerGame: React.FC = () => {
                     Join
                   </Button>
                 </div>
-              </div>
+              </motion.div>
               
-              <div className="text-center text-neutral-500 text-sm">
+              <motion.div
+                className="text-center text-neutral-500 text-sm"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.6 }}
+              >
                 Don't have a game code? Ask a friend to create a game and share their code with you.
-              </div>
+              </motion.div>
             </TabsContent>
           </Tabs>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

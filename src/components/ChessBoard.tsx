@@ -2,6 +2,7 @@
 import React from 'react';
 import ChessSquare from './ChessSquare';
 import { ChessBoard as ChessBoardType, Position } from '../models/ChessTypes';
+import { motion } from 'framer-motion';
 
 interface Props {
   board: ChessBoardType;
@@ -51,7 +52,7 @@ const ChessBoard: React.FC<Props> = ({ board, onSquareClick, flipped = false }) 
         squareRow.push(renderSquare(row, col));
       }
       rows.push(
-        <div key={row} className="flex">
+        <div key={row} className="flex w-full">
           {squareRow}
         </div>
       );
@@ -62,9 +63,14 @@ const ChessBoard: React.FC<Props> = ({ board, onSquareClick, flipped = false }) 
   };
 
   return (
-    <div className="w-full max-w-md md:max-w-lg lg:max-w-xl aspect-square border border-gray-700 rounded overflow-hidden shadow-lg">
+    <motion.div 
+      className="w-full aspect-square border border-gray-700 rounded overflow-hidden shadow-lg"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
       {renderBoard()}
-    </div>
+    </motion.div>
   );
 };
 

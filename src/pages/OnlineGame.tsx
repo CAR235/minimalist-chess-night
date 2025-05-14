@@ -9,7 +9,9 @@ import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import { useOnlineGame } from '@/hooks/useOnlineGame';
 import { Card, CardContent } from '@/components/ui/card';
-import { Copy, User, Users, Clock } from 'lucide-react';
+import { Copy, User, Users, Clock, ChevronLeft } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const OnlineGame: React.FC = () => {
   const { gameId } = useParams<{ gameId: string }>();
@@ -18,6 +20,7 @@ const OnlineGame: React.FC = () => {
   const [playerColor, setPlayerColor] = useState<PieceColor | null>(null);
   const [board, setBoard] = useState<ChessBoardType>(initializeBoard());
   const [waitingForOpponent, setWaitingForOpponent] = useState(true);
+  const isMobile = useIsMobile();
   
   const { 
     isConnected, 
@@ -193,10 +196,23 @@ const OnlineGame: React.FC = () => {
   
   return (
     <div className="min-h-screen flex flex-col items-center bg-chess-background p-4">
-      <div className="mb-6 w-full max-w-6xl">
+      <motion.div 
+        className="mb-6 w-full max-w-6xl"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
         <div className="flex flex-wrap justify-between items-center mb-4">
-          <h1 className="text-2xl font-bold text-white">Online Chess Game</h1>
-          <div className="flex items-center">
+          <Button 
+            variant="ghost" 
+            className="text-white/70 hover:text-white mr-2" 
+            onClick={() => navigate('/multiplayer')}
+          >
+            <ChevronLeft className="mr-2 h-4 w-4" />
+            Back to Lobby
+          </Button>
+          
+          <div className="flex items-center ml-auto">
             <div className="flex items-center mr-4 bg-neutral-800 py-1 px-3 rounded">
               <span className="text-neutral-400 text-sm mr-2">Game ID:</span>
               <span className="font-mono text-white">{gameId}</span>
@@ -204,31 +220,23 @@ const OnlineGame: React.FC = () => {
                 <Copy className="h-3 w-3" />
               </Button>
             </div>
-            
-            <Button 
-              variant="outline" 
-              size="sm"
-              className="mr-2"
-              onClick={() => navigate('/multiplayer')}
-            >
-              Lobby
-            </Button>
-            
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => navigate('/')}
-            >
-              Home
-            </Button>
           </div>
         </div>
         
         {waitingForOpponent ? (
-          <div className="bg-neutral-800 p-3 rounded-lg text-amber-500 mb-4 flex items-center">
+          <motion.div 
+            className="bg-neutral-800 p-3 rounded-lg text-amber-500 mb-4 flex items-center"
+            animate={{ 
+              opacity: [0.7, 1, 0.7],
+            }}
+            transition={{ 
+              duration: 2,
+              repeat: Infinity,
+            }}
+          >
             <Clock className="mr-2 h-4 w-4 animate-pulse" />
             Waiting for opponent to join...
-          </div>
+          </motion.div>
         ) : !opponentConnected ? (
           <div className="bg-neutral-800 p-3 rounded-lg text-red-500 mb-4 flex items-center">
             <User className="mr-2 h-4 w-4" />
@@ -244,25 +252,37 @@ const OnlineGame: React.FC = () => {
             <span className="text-white">Playing as {playerColor === 'white' ? 'White' : 'Black'}</span>
           </div>
         )}
-      </div>
+      </motion.div>
       
       <div className="flex flex-col lg:flex-row items-start gap-6 w-full max-w-6xl">
-        <div className="w-full lg:w-2/3">
+        <motion.div 
+          className="w-full lg:w-2/3"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
           <Card className="p-2 bg-neutral-900 border-neutral-700">
-            <ChessBoard 
-              board={board} 
-              onSquareClick={handleSquareClick}
-              flipped={flippedBoard}
-            />
+            <CardContent className="p-0">
+              <ChessBoard 
+                board={board} 
+                onSquareClick={handleSquareClick}
+                flipped={flippedBoard}
+              />
+            </CardContent>
           </Card>
-        </div>
-        <div className="w-full lg:w-1/3">
+        </motion.div>
+        <motion.div 
+          className="w-full lg:w-1/3"
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+        >
           <GameInfo 
             board={board} 
             onReset={handleReset}
             onResign={handleResign}
           />
-        </div>
+        </motion.div>
       </div>
     </div>
   );
