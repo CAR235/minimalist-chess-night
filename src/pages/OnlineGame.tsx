@@ -12,6 +12,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Copy, ChevronLeft, Users, Clock, Shield, AlertTriangle, CheckCircle, Home } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { toast as sonnerToast } from '@/components/ui/use-toast';
 
 const OnlineGame: React.FC = () => {
   const { gameId } = useParams<{ gameId: string }>();
@@ -38,6 +39,7 @@ const OnlineGame: React.FC = () => {
     // Join or create the game when component mounts
     const setupGame = async () => {
       try {
+        console.log("Setting up game...");
         const { color, initialBoard, opponentJoined } = await joinGame();
         setPlayerColor(color);
         
@@ -55,13 +57,17 @@ const OnlineGame: React.FC = () => {
         setShowJoinedNotification(true);
         setTimeout(() => setShowJoinedNotification(false), 3000);
         
+        console.log(`Joined as ${color}, opponent joined: ${opponentJoined}`);
+        
         if (opponentJoined) {
           toast({
             title: "Game started!",
-            description: `Both players connected. ${color === 'white' ? 'You' : 'Your opponent'} move first.`
+            description: `Both players connected. ${color === 'white' ? 'You' : 'Your opponent'} move first.`,
+            variant: "default"
           });
         }
       } catch (error) {
+        console.error("Error setting up game:", error);
         toast({
           title: "Error joining game",
           description: "Could not join the game. Please try again.",
@@ -74,6 +80,7 @@ const OnlineGame: React.FC = () => {
     
     // Subscribe to game changes
     const unsubscribe = subscribeToGameChanges((newBoard) => {
+      console.log("Got board update from subscription");
       setBoard(newBoard);
       
       // Check for game status notifications
@@ -102,15 +109,22 @@ const OnlineGame: React.FC = () => {
   // Effect to monitor opponent connection status
   useEffect(() => {
     if (opponentConnected && waitingForOpponent) {
+      console.log("Opponent joined notification triggered");
       toast({
         title: "Opponent joined!",
         description: "Your opponent has joined the game. The match is ready to begin.",
+      });
+      
+      // Use sonner toast for a different visual notification
+      sonnerToast({
+        title: "Game started!",
+        description: "Your opponent has joined. Let's play!",
       });
     }
   }, [opponentConnected, waitingForOpponent, toast]);
   
   // Check if it's the current player's turn
-  const isTurnToPlay = playerColor === board.currentTurn && !waitingForOpponent;
+  const isTurnToPlay = playerColor === board.currentTurn && opponentConnected;
   
   // Handle click on a square
   const handleSquareClick = (position: Position) => {

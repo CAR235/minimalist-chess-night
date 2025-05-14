@@ -1,157 +1,172 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { ArrowRight, Users } from "lucide-react";
+
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { Users, ArrowRight } from "lucide-react";
 
-const Index = () => {
-  const navigate = useNavigate();
-  const [onlinePlayers, setOnlinePlayers] = useState<number>(0);
-
-  // Generate random online player count
+export default function Home() {
+  const [onlinePlayers, setOnlinePlayers] = useState(0);
+  
+  // Generate a random number of online players
   useEffect(() => {
-    // Initial random count between 30 and 130
-    const initialCount = Math.floor(Math.random() * (130 - 30 + 1)) + 30;
-    setOnlinePlayers(initialCount);
-
-    // Update count every 20 seconds
+    // Initial random number between 30 and 130
+    const getRandomPlayerCount = () => Math.floor(Math.random() * (130 - 30 + 1) + 30);
+    setOnlinePlayers(getRandomPlayerCount());
+    
+    // Update the count every 20 seconds
     const interval = setInterval(() => {
-      const changeAmount = Math.floor(Math.random() * (25 - 10 + 1)) + 10;
+      // Random change between +/- 10 to 25 players
+      const change = Math.floor(Math.random() * (25 - 10 + 1) + 10);
       const increase = Math.random() > 0.5;
       
-      setOnlinePlayers(prevCount => {
-        let newCount = increase 
-          ? prevCount + changeAmount 
-          : prevCount - changeAmount;
-        
-        // Keep within range 30-130
-        newCount = Math.max(30, Math.min(130, newCount));
+      setOnlinePlayers(prev => {
+        // Ensure count stays within bounds
+        const newCount = increase ? prev + change : prev - change;
+        if (newCount < 30) return 30 + Math.floor(Math.random() * 10);
+        if (newCount > 130) return 130 - Math.floor(Math.random() * 10);
         return newCount;
       });
     }, 20000);
-
+    
     return () => clearInterval(interval);
   }, []);
+  
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+  
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { y: 0, opacity: 1 }
+  };
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-black via-chess-background to-neutral-900 flex flex-col items-center justify-center overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-amber-500/10 via-transparent to-transparent"></div>
-      
-      <div className="relative z-10 container mx-auto px-4 flex flex-col items-center justify-center gap-10">
-        {/* Hero Section */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          className="text-center max-w-2xl"
-        >
+    <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white">
+      <div className="max-w-6xl mx-auto px-4 py-12">
+        {/* Header */}
+        <div className="text-center mb-12">
           <motion.h1 
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            className="text-6xl md:text-8xl font-bold tracking-tight leading-tight"
+            className="text-5xl md:text-7xl font-bold mb-6"
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5 }}
           >
             <span className="text-white">Chess</span>
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 via-amber-300 to-amber-100 ml-3">Master</span>
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Master</span>
           </motion.h1>
           
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="mt-6 md:mt-10 max-w-md mx-auto"
+          <motion.p 
+            className="text-xl text-slate-300 max-w-2xl mx-auto"
+            initial={{ y: -10, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <p className="text-lg md:text-xl text-neutral-300/90">
-              Experience the ultimate chess gameplay with an elegant, modern interface
-            </p>
-          </motion.div>
-
-          {/* Online players count */}
+            Challenge your mind with the ultimate game of strategy and skill
+          </motion.p>
+          
           <motion.div
+            className="text-amber-300 mt-4 flex items-center justify-center gap-2"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
-            className="mt-6 flex items-center justify-center gap-2 text-emerald-400"
+            transition={{ delay: 0.4 }}
           >
-            <Users className="h-5 w-5" />
-            <span className="font-medium">{onlinePlayers} players online now</span>
+            <Users size={16} />
+            <span>{onlinePlayers} players online</span>
+          </motion.div>
+        </div>
+
+        {/* Game modes */}
+        <motion.div 
+          className="grid md:grid-cols-2 gap-8 mb-12"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          {/* Online Game */}
+          <motion.div variants={itemVariants}>
+            <Card className="overflow-hidden border-0 shadow-xl h-full bg-gradient-to-br from-blue-900/40 to-blue-950/40 backdrop-blur-sm border-t border-blue-500/20">
+              <CardContent className="p-0">
+                <div className="p-8">
+                  <div className="w-16 h-16 rounded-2xl bg-blue-500/20 flex items-center justify-center mb-6">
+                    <Users className="h-8 w-8 text-blue-400" />
+                  </div>
+                  <h2 className="text-2xl font-bold mb-2 text-white">Online Play</h2>
+                  <p className="text-slate-300 mb-8">
+                    Challenge friends or random opponents from around the world. Create a game and share the code to start playing.
+                  </p>
+                  <Link to="/multiplayer">
+                    <Button className="bg-blue-600 hover:bg-blue-700 w-full flex items-center justify-center gap-2 py-6 text-lg">
+                      Play Online <ArrowRight className="h-5 w-5 ml-1" />
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Local Game */}
+          <motion.div variants={itemVariants}>
+            <Card className="overflow-hidden border-0 shadow-xl h-full bg-gradient-to-br from-amber-900/40 to-amber-950/40 backdrop-blur-sm border-t border-amber-500/20">
+              <CardContent className="p-0">
+                <div className="p-8">
+                  <div className="w-16 h-16 rounded-2xl bg-amber-500/20 flex items-center justify-center mb-6">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0" />
+                      <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2" />
+                      <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8" />
+                      <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15" />
+                    </svg>
+                  </div>
+                  <h2 className="text-2xl font-bold mb-2 text-white">Local Play</h2>
+                  <p className="text-slate-300 mb-8">
+                    Play chess on the same device with a friend or family member. Perfect for learning and casual games.
+                  </p>
+                  <Link to="/play-local">
+                    <Button className="bg-amber-600 hover:bg-amber-700 w-full flex items-center justify-center gap-2 py-6 text-lg">
+                      Play Locally <ArrowRight className="h-5 w-5 ml-1" />
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
           </motion.div>
         </motion.div>
 
-        {/* Action Buttons */}
+        {/* Features */}
         <motion.div
+          className="grid grid-cols-1 md:grid-cols-3 gap-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.6 }}
-          className="flex flex-col md:flex-row gap-4 w-full max-w-md justify-center mt-4"
+          transition={{ delay: 0.6, duration: 0.5 }}
         >
-          <motion.div 
-            whileHover={{ scale: 1.03 }} 
-            whileTap={{ scale: 0.97 }}
-            className="w-full md:w-auto"
-          >
-            <Button 
-              onClick={() => navigate('/multiplayer')}
-              className="w-full md:w-auto bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white px-8 py-7 text-lg rounded-xl shadow-lg shadow-amber-500/20"
-              size="lg"
-            >
-              Play Online <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-          </motion.div>
+          {/* Feature 1 */}
+          <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700/50">
+            <h3 className="text-xl font-bold mb-2 text-white">Intuitive Interface</h3>
+            <p className="text-slate-400">Easy-to-use chess board with move highlighting and drag-and-drop functionality.</p>
+          </div>
           
-          <motion.div 
-            whileHover={{ scale: 1.03 }} 
-            whileTap={{ scale: 0.97 }}
-            className="w-full md:w-auto"
-          >
-            <Button 
-              onClick={() => navigate('/local-game')}
-              variant="outline"
-              className="w-full md:w-auto border-white/10 hover:bg-white/5 text-white px-8 py-7 text-lg rounded-xl"
-              size="lg"
-            >
-              Play Locally
-            </Button>
-          </motion.div>
-        </motion.div>
-        
-        {/* Chess Piece Animation */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1.5, delay: 0.8 }}
-          className="relative w-full max-w-lg h-20 mt-8"
-        >
-          {['♟︎', '♞', '♜', '♛', '♚', '♝'].map((piece, index) => (
-            <motion.div
-              key={index}
-              className="absolute text-4xl md:text-5xl text-white/80"
-              initial={{ 
-                x: Math.random() * 100 - 50,
-                y: -20, 
-                opacity: 0 
-              }}
-              animate={{ 
-                x: [null, Math.random() * 300 - 150], 
-                y: [null, 0],
-                opacity: [0, 1, 0.8]
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-                repeatType: "reverse",
-                delay: index * 0.2,
-                ease: "easeInOut"
-              }}
-              style={{ left: `${(index + 1) * 14}%` }}
-            >
-              {piece}
-            </motion.div>
-          ))}
+          {/* Feature 2 */}
+          <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700/50">
+            <h3 className="text-xl font-bold mb-2 text-white">Real-time Gameplay</h3>
+            <p className="text-slate-400">Instant updates and notifications for a seamless multiplayer experience.</p>
+          </div>
+          
+          {/* Feature 3 */}
+          <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700/50">
+            <h3 className="text-xl font-bold mb-2 text-white">Move History</h3>
+            <p className="text-slate-400">Review the game with detailed move history and position analysis.</p>
+          </div>
         </motion.div>
       </div>
     </div>
   );
-};
-
-export default Index;
+}

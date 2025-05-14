@@ -13,6 +13,7 @@ export const useOnlineGame = (gameId: string) => {
   const playerColorRef = useRef<PieceColor | null>(null);
   const { toast } = useToast();
   const [userId, setUserId] = useState<string | null>(null);
+  const [waitingForOpponent, setWaitingForOpponent] = useState(true);
   
   // Check current auth status
   useEffect(() => {
@@ -57,34 +58,51 @@ export const useOnlineGame = (gameId: string) => {
       
       // If game exists
       if (game) {
+        console.log("Game exists, checking player assignments:", game);
+        
         // Determine which color the player will be
-        if (!game.white_player) {
-          // Update the game with the player as white
+        if (!game.white_player && !game.black_player) {
+          // First player joins - automatically white
+          await supabase
+            .from('chess_games')
+            .update({ white_player: userId })
+            .eq('id', gameId);
+          color = 'white';
+          opponentJoined = false;
+          console.log("First player joining as white");
+        } else if (!game.white_player) {
+          // White slot available
           await supabase
             .from('chess_games')
             .update({ white_player: userId })
             .eq('id', gameId);
           color = 'white';
           opponentJoined = !!game.black_player;
+          console.log("Joining as white, black exists:", !!game.black_player);
         } else if (!game.black_player) {
-          // Update the game with the player as black
+          // Black slot available
           await supabase
             .from('chess_games')
             .update({ black_player: userId })
             .eq('id', gameId);
           color = 'black';
           opponentJoined = true;
+          console.log("Joining as black, white exists:", !!game.white_player);
         } else if (game.white_player === userId) {
           // Player is already white
           color = 'white';
           opponentJoined = !!game.black_player;
+          console.log("Already white, black exists:", !!game.black_player);
         } else if (game.black_player === userId) {
           // Player is already black
           color = 'black';
           opponentJoined = !!game.white_player;
+          console.log("Already black, white exists:", !!game.white_player);
         } else {
           // Game is full, but allow spectating
           color = 'white'; // spectator defaults to white view
+          opponentJoined = true;
+          console.log("Game full, spectating as white");
         }
         
         // Re-fetch the updated game data
@@ -96,6 +114,13 @@ export const useOnlineGame = (gameId: string) => {
         
         if (updatedGame) {
           game = updatedGame;
+          // Update opponent connection status based on fresh data
+          if (color === 'white') {
+            opponentJoined = !!updatedGame.black_player;
+          } else {
+            opponentJoined = !!updatedGame.white_player;
+          }
+          console.log("Updated game data:", updatedGame, "opponent joined:", opponentJoined);
         }
       } else {
         // Create a new game
@@ -121,15 +146,17 @@ export const useOnlineGame = (gameId: string) => {
         if (newGame) {
           game = newGame;
           color = 'white';
+          console.log("Created new game as white");
         }
       }
       
       playerColorRef.current = color;
       setIsConnected(true);
       setOpponentConnected(opponentJoined);
+      setWaitingForOpponent(!opponentJoined);
       setIsPlayerTurn(color === 'white'); // white goes first
       
-      console.log(`Joined game ${gameId} as ${color}`);
+      console.log(`Joined game ${gameId} as ${color}, opponent connected: ${opponentJoined}`);
       
       // Return game data
       return {
@@ -202,9 +229,11 @@ export const useOnlineGame = (gameId: string) => {
         if (playerColorRef.current === 'white' && updatedGame?.black_player) {
           setOpponentConnected(true);
           setWaitingForOpponent(false);
+          console.log("Black player joined, no longer waiting");
         } else if (playerColorRef.current === 'black' && updatedGame?.white_player) {
           setOpponentConnected(true);
           setWaitingForOpponent(false);
+          console.log("White player joined, no longer waiting");
         }
       })
       .subscribe();
@@ -214,9 +243,6 @@ export const useOnlineGame = (gameId: string) => {
       supabase.removeChannel(channel);
     };
   }, [gameId]);
-  
-  // State to track if we're waiting for an opponent
-  const [waitingForOpponent, setWaitingForOpponent] = useState(true);
   
   // Check opponent connection status
   useEffect(() => {
@@ -235,6 +261,8 @@ export const useOnlineGame = (gameId: string) => {
         
         setOpponentConnected(opponentExists);
         setWaitingForOpponent(!opponentExists);
+        
+        console.log(`Status check: I am ${isWhitePlayer ? 'white' : 'black'}, opponent exists: ${opponentExists}`);
       }
     };
     
