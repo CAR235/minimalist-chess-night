@@ -158,24 +158,53 @@ const PlayLocal: React.FC = () => {
   const flippedBoard = playerColor === 'black';
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen w-full bg-gradient-to-br from-black via-chess-background to-neutral-900">
+      {/* Decorative background elements */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-amber-500/10 via-transparent to-transparent pointer-events-none"></div>
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {['♟︎', '♞', '♜', '♛', '♚', '♝'].map((piece, index) => (
+          <motion.div
+            key={index}
+            className="absolute text-4xl text-white/5"
+            initial={{ 
+              x: Math.random() * 100 - 50 + (index * 100),
+              y: Math.random() * 100 + 50, 
+              opacity: 0.05 
+            }}
+            animate={{ 
+              x: [null, Math.random() * 200 - 100 + (index * 100)], 
+              y: [null, Math.random() * 100 + 100],
+              opacity: [0.05, 0.08, 0.05]
+            }}
+            transition={{
+              duration: 15,
+              repeat: Infinity,
+              repeatType: "reverse",
+              ease: "easeInOut"
+            }}
+          >
+            {piece}
+          </motion.div>
+        ))}
+      </div>
+
       {/* Header */}
-      <div className="border-b border-border pb-4">
+      <div className="border-b border-white/10 backdrop-blur-sm bg-black/30 sticky top-0 z-10">
         <div className="container max-w-6xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Button 
               variant="ghost" 
               onClick={() => navigate('/local-game')}
-              className="hover:bg-secondary"
+              className="hover:bg-white/5 text-white"
             >
               <ChevronLeft className="mr-2 h-4 w-4" />
               Back to Settings
             </Button>
             
             <div className="flex items-center ml-auto">
-              <div className="bg-secondary py-2 px-3 rounded flex items-center shadow-sm">
+              <div className="bg-white/10 backdrop-blur-sm py-2 px-3 rounded-full flex items-center shadow-sm border border-white/10">
                 <Brain className="h-4 w-4 text-amber-400 mr-2" />
-                <span className="text-sm font-medium">
+                <span className="text-sm font-medium text-white">
                   {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)} CPU
                 </span>
               </div>
@@ -185,7 +214,7 @@ const PlayLocal: React.FC = () => {
       </div>
 
       {/* Game status bar */}
-      <div className="border-b border-border/60 bg-secondary/30">
+      <div className="border-b border-white/10 bg-black/20 backdrop-blur-sm">
         <div className="container max-w-6xl mx-auto px-4 py-3">
           <motion.div 
             animate={{ 
@@ -193,7 +222,7 @@ const PlayLocal: React.FC = () => {
               scale: isPlayerTurn ? 1 : 0.98,
             }}
             transition={{ duration: 0.3 }}
-            className="flex items-center"
+            className="flex items-center text-white"
           >
             <div className="font-medium">
               {isPlayerTurn 
@@ -201,7 +230,7 @@ const PlayLocal: React.FC = () => {
                 : "CPU is thinking..."
               }
             </div>
-            <div className="mx-2 text-muted-foreground">•</div>
+            <div className="mx-2 text-white/50">•</div>
             <div>Playing as {playerColor === 'white' ? 'White' : 'Black'}</div>
           </motion.div>
         </div>
@@ -216,7 +245,7 @@ const PlayLocal: React.FC = () => {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <Card className="p-2 border border-border shadow-lg bg-card">
+            <Card className="p-2 border border-white/10 shadow-lg bg-black/40 backdrop-blur-sm">
               <ChessBoard 
                 board={board} 
                 onSquareClick={handleSquareClick}
@@ -230,10 +259,12 @@ const PlayLocal: React.FC = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
           >
-            <GameInfo 
-              board={board} 
-              onReset={handleReset} 
-            />
+            <Card className="border-white/10 bg-black/40 backdrop-blur-sm">
+              <GameInfo 
+                board={board} 
+                onReset={handleReset} 
+              />
+            </Card>
           </motion.div>
         </div>
       </div>
