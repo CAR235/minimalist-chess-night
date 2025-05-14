@@ -1,3 +1,4 @@
+
 import { ChessBoard, Piece, PieceColor, PieceType, Position } from '../models/ChessTypes';
 
 const initialPieces = (): Piece[] => [
@@ -376,8 +377,8 @@ export const makeMove = (
   };
   
   // Create new board state
-  const newTurn = board.currentTurn === 'white' ? 'black' : 'white';
-  const newBoard = {
+  const newTurn = board.currentTurn === 'white' ? 'black' : 'white' as PieceColor;
+  const newBoard: ChessBoard = {
     pieces: newPieces,
     selectedPiece: null,
     validMoves: [],

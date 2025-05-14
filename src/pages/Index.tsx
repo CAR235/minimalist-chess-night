@@ -3,6 +3,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import ChessGame from "@/components/ChessGame";
 import { Button } from "@/components/ui/button";
+import { User, Users, Book } from "lucide-react";
 
 const Index = () => {
   const navigate = useNavigate();
