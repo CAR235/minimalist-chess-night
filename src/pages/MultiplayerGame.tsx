@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,11 +16,11 @@ const MultiplayerGame: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Generate a unique game ID
-  const createGame = async () => {
+  // Generate a unique game ID - optimized to prevent browser freezing
+  const createGame = () => {
     try {
       setIsLoading(true);
-      // Generate a random 6-character code
+      // Generate a random 6-character code without any heavy operations
       const randomId = Math.random().toString(36).substring(2, 8).toUpperCase();
       setCreatedGameId(randomId);
       
@@ -54,17 +53,12 @@ const MultiplayerGame: React.FC = () => {
 
     setIsLoading(true);
     try {
-      // Check if the game exists in Supabase
-      const { data } = await supabase
-        .from('chess_games')
-        .select('id')
-        .eq('id', gameId)
-        .single();
-      
-      // If the game doesn't exist, it will be created when navigating to the game page
+      // Instead of checking if the game exists, just navigate to it
+      // This prevents unnecessary database operations that might cause freezing
       navigate(`/game/${gameId}`);
     } catch (error) {
-      // If there's an error, still navigate to create a new game with this ID
+      console.error('Error joining game:', error);
+      // Still navigate even if there's an error
       navigate(`/game/${gameId}`);
     } finally {
       setIsLoading(false);

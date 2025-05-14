@@ -1,67 +1,139 @@
 
-import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
 import { ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-export default function Home() {
-  const [onlinePlayers, setOnlinePlayers] = useState(0);
-  
-  // Generate a random number of online players
+const Index = () => {
+  const navigate = useNavigate();
+
+  // Auto-redirect after 10 seconds if user doesn't interact
   useEffect(() => {
-    // Initial random number between 30 and 130
-    const getRandomPlayerCount = () => Math.floor(Math.random() * (130 - 30 + 1) + 30);
-    setOnlinePlayers(getRandomPlayerCount());
-    
-    // Update the count every 20 seconds
-    const interval = setInterval(() => {
-      // Random change between +/- 10 to 25 players
-      const change = Math.floor(Math.random() * (25 - 10 + 1) + 10);
-      const increase = Math.random() > 0.5;
-      
-      setOnlinePlayers(prev => {
-        // Ensure count stays within bounds
-        const newCount = increase ? prev + change : prev - change;
-        if (newCount < 30) return 30 + Math.floor(Math.random() * 10);
-        if (newCount > 130) return 130 - Math.floor(Math.random() * 10);
-        return newCount;
-      });
-    }, 20000);
-    
-    return () => clearInterval(interval);
-  }, []);
+    const timer = setTimeout(() => {
+      navigate('/multiplayer');
+    }, 10000);
+    return () => clearTimeout(timer);
+  }, [navigate]);
 
   return (
-    <div className="flex flex-col min-h-screen bg-[url('/chess-bg.jpg')] bg-cover bg-center">
-      <div className="flex-1 flex flex-col justify-center items-center p-4 backdrop-blur-sm bg-black/40">
-        <div className="max-w-md w-full text-center space-y-8">
-          <div>
-            <h1 className="text-5xl font-extrabold text-white mb-6">
-              Chess<span className="text-amber-400">Master</span>
-            </h1>
-            <p className="text-xl text-gray-200 mb-8">
-              Play chess online or locally with friends
-            </p>
-            <div className="text-green-400 mb-8">
-              {onlinePlayers} players online now
-            </div>
-          </div>
+    <div className="min-h-screen w-full bg-gradient-to-br from-black via-chess-background to-neutral-900 flex flex-col items-center justify-center overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-amber-500/10 via-transparent to-transparent"></div>
+      
+      <div className="relative z-10 container mx-auto px-4 flex flex-col items-center justify-center gap-10">
+        {/* Hero Section */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          className="text-center max-w-2xl"
+        >
+          <motion.h1 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+            className="text-6xl md:text-8xl font-bold tracking-tight leading-tight"
+          >
+            <span className="text-white">Chess</span>
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 via-amber-300 to-amber-100 ml-3">Master</span>
+          </motion.h1>
           
-          <div className="space-y-4">
-            <Link to="/multiplayer" className="w-full block">
-              <Button className="w-full py-6 bg-amber-500 hover:bg-amber-600 text-xl">
-                Play Online <ArrowRight className="ml-2" />
-              </Button>
-            </Link>
-            <Link to="/local-game" className="w-full block">
-              <Button variant="outline" className="w-full py-6 text-white bg-transparent border-white hover:bg-white/10 text-xl">
-                Play Locally
-              </Button>
-            </Link>
-          </div>
-        </div>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="mt-6 md:mt-10 max-w-md mx-auto"
+          >
+            <p className="text-lg md:text-xl text-neutral-300/90">
+              Experience the ultimate chess gameplay with an elegant, modern interface
+            </p>
+          </motion.div>
+        </motion.div>
+
+        {/* Action Buttons */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.6 }}
+          className="flex flex-col md:flex-row gap-4 w-full max-w-md justify-center mt-4"
+        >
+          <motion.div 
+            whileHover={{ scale: 1.03 }} 
+            whileTap={{ scale: 0.97 }}
+            className="w-full md:w-auto"
+          >
+            <Button 
+              onClick={() => navigate('/multiplayer')}
+              className="w-full md:w-auto bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white px-8 py-7 text-lg rounded-xl shadow-lg shadow-amber-500/20"
+              size="lg"
+            >
+              Play Online <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+          </motion.div>
+          
+          <motion.div 
+            whileHover={{ scale: 1.03 }} 
+            whileTap={{ scale: 0.97 }}
+            className="w-full md:w-auto"
+          >
+            <Button 
+              onClick={() => navigate('/local-game')}
+              variant="outline"
+              className="w-full md:w-auto border-white/10 hover:bg-white/5 text-white px-8 py-7 text-lg rounded-xl"
+              size="lg"
+            >
+              Play Locally
+            </Button>
+          </motion.div>
+        </motion.div>
+        
+        {/* Chess Piece Animation */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1.5, delay: 0.8 }}
+          className="relative w-full max-w-lg h-20 mt-8"
+        >
+          {['♟︎', '♞', '♜', '♛', '♚', '♝'].map((piece, index) => (
+            <motion.div
+              key={index}
+              className="absolute text-4xl md:text-5xl text-white/80"
+              initial={{ 
+                x: Math.random() * 100 - 50,
+                y: -20, 
+                opacity: 0 
+              }}
+              animate={{ 
+                x: [null, Math.random() * 300 - 150], 
+                y: [null, 0],
+                opacity: [0, 1, 0.8]
+              }}
+              transition={{
+                duration: 3,
+                repeat: Infinity,
+                repeatType: "reverse",
+                delay: index * 0.2,
+                ease: "easeInOut"
+              }}
+              style={{ left: `${(index + 1) * 14}%` }}
+            >
+              {piece}
+            </motion.div>
+          ))}
+        </motion.div>
+
+        {/* Footer */}
+        <motion.p 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1, delay: 1 }}
+          className="text-neutral-500 text-sm mt-8"
+        >
+          Redirecting to game in 10 seconds...
+        </motion.p>
       </div>
     </div>
   );
-}
+};
+
+export default Index;
