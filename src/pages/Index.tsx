@@ -1,5 +1,5 @@
 
-import React, { useEffect } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
@@ -7,14 +7,6 @@ import { Button } from "@/components/ui/button";
 
 const Index = () => {
   const navigate = useNavigate();
-
-  // Auto-redirect after 10 seconds if user doesn't interact
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      navigate('/multiplayer');
-    }, 10000);
-    return () => clearTimeout(timer);
-  }, [navigate]);
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-black via-chess-background to-neutral-900 flex flex-col items-center justify-center overflow-hidden">
@@ -121,16 +113,6 @@ const Index = () => {
             </motion.div>
           ))}
         </motion.div>
-
-        {/* Footer */}
-        <motion.p 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 1 }}
-          className="text-neutral-500 text-sm mt-8"
-        >
-          Redirecting to game in 10 seconds...
-        </motion.p>
       </div>
     </div>
   );

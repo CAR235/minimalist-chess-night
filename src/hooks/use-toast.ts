@@ -18,6 +18,8 @@ type ToasterToast = {
   description?: React.ReactNode
   action?: React.ReactNode
   variant?: "default" | "destructive"
+  onOpenChange?: (open: boolean) => void
+  open?: boolean
 }
 
 const actionTypes = {
