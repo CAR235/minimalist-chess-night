@@ -2,6 +2,7 @@
 import React from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Move } from '@/models/ChessTypes';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 interface MoveHistoryProps {
   moves: Move[];
@@ -15,7 +16,7 @@ const MoveHistory: React.FC<MoveHistoryProps> = ({
   onMoveClick
 }) => {
   if (!moves.length) return (
-    <div className="text-center text-sm text-muted-foreground">
+    <div className="text-center text-sm text-muted-foreground p-4">
       No moves yet
     </div>
   );
@@ -27,41 +28,48 @@ const MoveHistory: React.FC<MoveHistoryProps> = ({
   }
 
   return (
-    <ScrollArea className="h-full w-full">
+    <ScrollArea className="h-full max-h-[300px] w-full">
       <div className="p-2">
         <h3 className="text-sm font-semibold mb-2">Move History</h3>
-        <table className="w-full">
-          <thead>
-            <tr className="text-xs text-muted-foreground border-b">
-              <th className="py-1 w-8">No.</th>
-              <th className="py-1 text-left">White</th>
-              <th className="py-1 text-left">Black</th>
-            </tr>
-          </thead>
-          <tbody>
+        <Table>
+          <TableHeader>
+            <TableRow className="hover:bg-transparent">
+              <TableHead className="w-8 text-center">No.</TableHead>
+              <TableHead>White</TableHead>
+              <TableHead>Black</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {moveRows.map((row, idx) => (
-              <tr key={idx} className="border-b border-border/30">
-                <td className="py-1 text-xs text-center text-muted-foreground">{idx + 1}.</td>
-                <td 
+              <TableRow 
+                key={idx} 
+                className="border-b border-border/30 hover:bg-muted/5"
+              >
+                <TableCell className="py-1 text-xs text-center text-muted-foreground">
+                  {idx + 1}.
+                </TableCell>
+                <TableCell 
                   className={`py-1 px-2 ${currentMove === idx * 2 ? 'bg-primary/10' : ''} 
                   hover:bg-primary/5 cursor-pointer rounded`}
                   onClick={() => onMoveClick?.(idx * 2)}
                 >
                   {formatMove(row[0])}
-                </td>
-                {row[1] && (
-                  <td 
+                </TableCell>
+                {row[1] ? (
+                  <TableCell 
                     className={`py-1 px-2 ${currentMove === idx * 2 + 1 ? 'bg-primary/10' : ''} 
                     hover:bg-primary/5 cursor-pointer rounded`}
                     onClick={() => onMoveClick?.(idx * 2 + 1)}
                   >
                     {formatMove(row[1])}
-                  </td>
-                ) || <td></td>}
-              </tr>
+                  </TableCell>
+                ) : (
+                  <TableCell></TableCell>
+                )}
+              </TableRow>
             ))}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
     </ScrollArea>
   );
@@ -84,9 +92,9 @@ const formatMove = (move: Move): string => {
   const capture = move.capturedPiece ? "x" : "";
   
   // Check or checkmate notation
-  // This would need to be added by the caller since it requires knowledge of the board state
+  const checkSymbol = move.isCheck ? (move.isCheckmate ? "#" : "+") : "";
   
-  return `${pieceSymbol}${from}${capture}${to}`;
+  return `${pieceSymbol}${from}${capture}${to}${checkSymbol}`;
 };
 
 // Helper to get piece symbol
