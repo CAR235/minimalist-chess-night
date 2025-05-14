@@ -53,7 +53,7 @@ const ChessBoard: React.FC<Props> = ({ board, onSquareClick, flipped = false }) 
         squareRow.push(renderSquare(row, col));
       }
       rows.push(
-        <div key={row} className="flex w-full">
+        <div key={row} className="flex w-full h-1/8" style={{ height: '12.5%' }}>
           {squareRow}
         </div>
       );
