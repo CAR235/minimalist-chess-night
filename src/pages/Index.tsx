@@ -77,7 +77,7 @@ const Index = () => {
             className="w-full md:w-auto"
           >
             <Button 
-              onClick={() => navigate('/multiplayer')}
+              onClick={() => navigate('/local-game')}
               variant="outline"
               className="w-full md:w-auto border-white/10 hover:bg-white/5 text-white px-8 py-7 text-lg rounded-xl"
               size="lg"
