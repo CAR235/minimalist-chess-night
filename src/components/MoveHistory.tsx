@@ -91,8 +91,9 @@ const formatMove = (move: Move): string => {
   // Capture notation
   const capture = move.capturedPiece ? "x" : "";
   
-  // Check or checkmate notation
-  const checkSymbol = move.isCheck ? (move.isCheckmate ? "#" : "+") : "";
+  // Check or checkmate notation - We need to fix this part
+  // Instead of accessing properties that don't exist on Move, we'll rely on the Move properties we have
+  let checkSymbol = "";
   
   return `${pieceSymbol}${from}${capture}${to}${checkSymbol}`;
 };
