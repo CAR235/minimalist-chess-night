@@ -31,7 +31,7 @@ const ChessSquare: React.FC<ChessSquareProps> = ({
   }
 
   // Combine all of our styles
-  const squareClass = `w-1/8 h-1/8 flex items-center justify-center relative ${bgColor} transition-colors`;
+  const squareClass = `w-1/8 aspect-square flex items-center justify-center relative ${bgColor} transition-colors hover:brightness-110 cursor-pointer`;
 
   return (
     <div className={squareClass} onClick={onClick}>
@@ -39,7 +39,7 @@ const ChessSquare: React.FC<ChessSquareProps> = ({
       
       {/* Show valid move indicator */}
       {isValidMove && (
-        <div className="absolute w-1/3 h-1/3 rounded-full bg-chess-possible opacity-75"></div>
+        <div className="absolute w-1/3 h-1/3 rounded-full bg-chess-possible opacity-75 valid-move-indicator"></div>
       )}
       
       {/* Show row/column notations */}

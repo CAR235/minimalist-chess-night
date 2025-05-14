@@ -9,7 +9,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import { useOnlineGame } from '@/hooks/useOnlineGame';
 import { Card, CardContent } from '@/components/ui/card';
-import { Copy, User, Users, Clock, ChevronLeft } from 'lucide-react';
+import { Copy, ChevronLeft, Users, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -239,7 +239,7 @@ const OnlineGame: React.FC = () => {
           </motion.div>
         ) : !opponentConnected ? (
           <div className="bg-neutral-800 p-3 rounded-lg text-red-500 mb-4 flex items-center">
-            <User className="mr-2 h-4 w-4" />
+            <Users className="mr-2 h-4 w-4" />
             Opponent disconnected. Waiting for reconnection...
           </div>
         ) : (
