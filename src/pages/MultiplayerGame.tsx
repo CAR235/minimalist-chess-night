@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
-import { Copy, Users, ArrowRight, Clock, ChevronLeft, ChevronsRight } from 'lucide-react';
+import { Copy, Users, ArrowRight, Clock, ChevronLeft, ChevronsRight, Home } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { motion } from 'framer-motion';
@@ -123,13 +123,18 @@ const MultiplayerGame: React.FC = () => {
         <div className="flex items-center mb-8">
           <Button 
             variant="ghost" 
-            className="text-white/70 hover:text-white mr-4" 
+            className="text-white/70 hover:text-white mr-2" 
             onClick={() => navigate('/')}
           >
-            <ChevronLeft className="mr-2 h-4 w-4" />
-            Back to Home
+            <Home className="h-5 w-5" />
           </Button>
-          <h1 className="text-3xl font-bold text-white">Chess Multiplayer</h1>
+          
+          <h1 className="text-3xl font-bold text-white">
+            <span className="text-white">Chess</span>
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200 ml-1">Master</span>
+          </h1>
+          
+          <div className="ml-6 text-lg text-white/70">Multiplayer</div>
         </div>
         
         <motion.div 

@@ -9,7 +9,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import { useOnlineGame } from '@/hooks/useOnlineGame';
 import { Card, CardContent } from '@/components/ui/card';
-import { Copy, ChevronLeft, Users, Clock, Shield, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Copy, ChevronLeft, Users, Clock, Shield, AlertTriangle, CheckCircle, Home } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -20,6 +20,7 @@ const OnlineGame: React.FC = () => {
   const [playerColor, setPlayerColor] = useState<PieceColor | null>(null);
   const [board, setBoard] = useState<ChessBoardType>(initializeBoard());
   const isMobile = useIsMobile();
+  const [showJoinedNotification, setShowJoinedNotification] = useState(false);
   
   const { 
     isConnected, 
@@ -44,10 +45,20 @@ const OnlineGame: React.FC = () => {
           setBoard(initialBoard);
         }
         
+        // Show notification when successfully joined
+        toast({
+          title: "Game joined!",
+          description: `You are playing as ${color === 'white' ? 'White' : 'Black'}.`,
+          variant: "default"
+        });
+        
+        setShowJoinedNotification(true);
+        setTimeout(() => setShowJoinedNotification(false), 3000);
+        
         if (opponentJoined) {
           toast({
             title: "Game started!",
-            description: `You are playing as ${color === 'white' ? 'White' : 'Black'}.`
+            description: `Both players connected. ${color === 'white' ? 'You' : 'Your opponent'} move first.`
           });
         }
       } catch (error) {
@@ -87,6 +98,16 @@ const OnlineGame: React.FC = () => {
       unsubscribe();
     };
   }, [gameId, joinGame, subscribeToGameChanges, toast]);
+  
+  // Effect to monitor opponent connection status
+  useEffect(() => {
+    if (opponentConnected && waitingForOpponent) {
+      toast({
+        title: "Opponent joined!",
+        description: "Your opponent has joined the game. The match is ready to begin.",
+      });
+    }
+  }, [opponentConnected, waitingForOpponent, toast]);
   
   // Check if it's the current player's turn
   const isTurnToPlay = playerColor === board.currentTurn && !waitingForOpponent;
@@ -201,16 +222,29 @@ const OnlineGame: React.FC = () => {
           transition={{ duration: 0.5 }}
         >
           <div className="flex flex-wrap justify-between items-center mb-4">
-            <Button 
-              variant="ghost" 
-              className="text-white/80 hover:text-white hover:bg-white/10" 
-              onClick={() => navigate('/multiplayer')}
-            >
-              <ChevronLeft className="mr-2 h-4 w-4" />
-              Back to Lobby
-            </Button>
+            <div className="flex items-center space-x-3">
+              <Button 
+                variant="ghost" 
+                className="text-white/80 hover:text-white hover:bg-white/10" 
+                onClick={() => navigate('/')}
+              >
+                <Home className="h-5 w-5" />
+              </Button>
+              <div className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">
+                ChessMaster
+              </div>
+            </div>
             
             <div className="flex items-center ml-auto space-x-2">
+              <Button 
+                variant="ghost" 
+                className="text-white/80 hover:text-white hover:bg-white/10" 
+                onClick={() => navigate('/multiplayer')}
+              >
+                <ChevronLeft className="mr-2 h-4 w-4" />
+                Back to Lobby
+              </Button>
+              
               <div className="flex items-center py-1.5 px-3 rounded-full bg-white/10 backdrop-blur-sm border border-white/10">
                 <span className="text-white/60 text-sm mr-2">Game ID:</span>
                 <code className="font-mono text-amber-300">{gameId}</code>
@@ -300,6 +334,27 @@ const OnlineGame: React.FC = () => {
               </motion.div>
             )}
           </AnimatePresence>
+          
+          {/* Successfully joined notification */}
+          <AnimatePresence>
+            {showJoinedNotification && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+                className="bg-emerald-500/20 border border-emerald-500/30 p-3 rounded-lg mb-4 flex items-center"
+              >
+                <CheckCircle className="mr-2 h-5 w-5 text-emerald-300" />
+                <div>
+                  <div className="font-semibold text-emerald-200">Successfully joined!</div>
+                  <div className="text-sm text-emerald-300/80">
+                    You are playing as {playerColor === 'white' ? 'White' : 'Black'}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
         
         {/* Game Area */}
@@ -333,6 +388,7 @@ const OnlineGame: React.FC = () => {
               board={board} 
               onReset={handleReset}
               onResign={handleResign}
+              showMoveControls={true}
             />
             
             {/* Player Badge */}

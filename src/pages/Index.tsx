@@ -1,12 +1,37 @@
-
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const Index = () => {
   const navigate = useNavigate();
+  const [onlinePlayers, setOnlinePlayers] = useState<number>(0);
+
+  // Generate random online player count
+  useEffect(() => {
+    // Initial random count between 30 and 130
+    const initialCount = Math.floor(Math.random() * (130 - 30 + 1)) + 30;
+    setOnlinePlayers(initialCount);
+
+    // Update count every 20 seconds
+    const interval = setInterval(() => {
+      const changeAmount = Math.floor(Math.random() * (25 - 10 + 1)) + 10;
+      const increase = Math.random() > 0.5;
+      
+      setOnlinePlayers(prevCount => {
+        let newCount = increase 
+          ? prevCount + changeAmount 
+          : prevCount - changeAmount;
+        
+        // Keep within range 30-130
+        newCount = Math.max(30, Math.min(130, newCount));
+        return newCount;
+      });
+    }, 20000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-black via-chess-background to-neutral-900 flex flex-col items-center justify-center overflow-hidden">
@@ -39,6 +64,17 @@ const Index = () => {
             <p className="text-lg md:text-xl text-neutral-300/90">
               Experience the ultimate chess gameplay with an elegant, modern interface
             </p>
+          </motion.div>
+
+          {/* Online players count */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+            className="mt-6 flex items-center justify-center gap-2 text-emerald-400"
+          >
+            <Users className="h-5 w-5" />
+            <span className="font-medium">{onlinePlayers} players online now</span>
           </motion.div>
         </motion.div>
 
