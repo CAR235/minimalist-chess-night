@@ -66,6 +66,23 @@ const OnlineGame: React.FC = () => {
     const unsubscribe = subscribeToGameChanges((newBoard) => {
       setBoard(newBoard);
       setWaitingForOpponent(false);
+      
+      // Check for game status notifications
+      if (newBoard.isCheck && !newBoard.isCheckmate) {
+        toast({
+          title: "Check!",
+          description: `${newBoard.currentTurn === 'white' ? 'White' : 'Black'} is in check.`,
+        });
+      }
+      
+      if (newBoard.isCheckmate) {
+        const winner = newBoard.currentTurn === 'white' ? 'Black' : 'White';
+        toast({
+          title: "Checkmate!",
+          description: `${winner} wins the game.`,
+          variant: "destructive"
+        });
+      }
     });
     
     return () => {
@@ -117,24 +134,6 @@ const OnlineGame: React.FC = () => {
         // Send the updated board to the other player
         updateGameState(updatedBoard);
         
-        // Check notification after the move
-        if (updatedBoard.isCheck && !updatedBoard.isCheckmate) {
-          toast({
-            title: "Check!",
-            description: `${updatedBoard.currentTurn === 'white' ? 'White' : 'Black'} is in check.`,
-          });
-        }
-        
-        if (updatedBoard.isCheckmate) {
-          // The winner is the opposite of currentTurn since the turn has already changed
-          const winner = updatedBoard.currentTurn === 'white' ? 'Black' : 'White';
-          toast({
-            title: "Checkmate!",
-            description: `${winner} wins the game.`,
-            variant: "destructive"
-          });
-        }
-        
         return;
       }
     }
@@ -160,10 +159,10 @@ const OnlineGame: React.FC = () => {
   };
   
   // Reset the game
-  const handleReset = () => {
+  const handleReset = async () => {
     const newBoard = initializeBoard();
     setBoard(newBoard);
-    updateGameState(newBoard);
+    await updateGameState(newBoard);
     toast({
       title: "New Game",
       description: "The board has been reset. White moves first.",
@@ -185,13 +184,13 @@ const OnlineGame: React.FC = () => {
   const flippedBoard = playerColor === 'black';
   
   // Handle resignation
-  const handleResign = () => {
+  const handleResign = async () => {
+    // In a real game, we would update the game state to mark it as resigned
     toast({
       title: "Game Forfeit",
       description: `You resigned the game. ${playerColor === 'white' ? 'Black' : 'White'} wins.`,
       variant: "destructive"
     });
-    // In a real implementation, you would update the server about resignation
   };
   
   return (

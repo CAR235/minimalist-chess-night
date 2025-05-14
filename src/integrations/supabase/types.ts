@@ -9,7 +9,42 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      chess_games: {
+        Row: {
+          black_player: string | null
+          board: Json
+          created_at: string | null
+          current_turn: string
+          id: string
+          is_check: boolean | null
+          is_checkmate: boolean | null
+          updated_at: string | null
+          white_player: string | null
+        }
+        Insert: {
+          black_player?: string | null
+          board: Json
+          created_at?: string | null
+          current_turn: string
+          id: string
+          is_check?: boolean | null
+          is_checkmate?: boolean | null
+          updated_at?: string | null
+          white_player?: string | null
+        }
+        Update: {
+          black_player?: string | null
+          board?: Json
+          created_at?: string | null
+          current_turn?: string
+          id?: string
+          is_check?: boolean | null
+          is_checkmate?: boolean | null
+          updated_at?: string | null
+          white_player?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

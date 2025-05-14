@@ -8,26 +8,41 @@ import { Copy, Users, ArrowRight, Clock, ChevronLeft, ChevronsRight } from 'luci
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { motion } from 'framer-motion';
+import { supabase } from '@/integrations/supabase/client';
 
 const MultiplayerGame: React.FC = () => {
   const [gameId, setGameId] = useState<string>('');
   const [createdGameId, setCreatedGameId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   // Generate a unique game ID
-  const createGame = () => {
-    // Generate a random 6-character code
-    const randomId = Math.random().toString(36).substring(2, 8).toUpperCase();
-    setCreatedGameId(randomId);
-    toast({
-      title: "Game Created!",
-      description: "Share this code with your opponent to start playing.",
-    });
+  const createGame = async () => {
+    try {
+      setIsLoading(true);
+      // Generate a random 6-character code
+      const randomId = Math.random().toString(36).substring(2, 8).toUpperCase();
+      setCreatedGameId(randomId);
+      
+      toast({
+        title: "Game Created!",
+        description: "Share this code with your opponent to start playing.",
+      });
+    } catch (error) {
+      console.error('Error creating game:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create a game. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Join an existing game
-  const joinGame = () => {
+  const joinGame = async () => {
     if (!gameId) {
       toast({
         title: "Error",
@@ -37,7 +52,23 @@ const MultiplayerGame: React.FC = () => {
       return;
     }
 
-    navigate(`/game/${gameId}`);
+    setIsLoading(true);
+    try {
+      // Check if the game exists in Supabase
+      const { data } = await supabase
+        .from('chess_games')
+        .select('id')
+        .eq('id', gameId)
+        .single();
+      
+      // If the game doesn't exist, it will be created when navigating to the game page
+      navigate(`/game/${gameId}`);
+    } catch (error) {
+      // If there's an error, still navigate to create a new game with this ID
+      navigate(`/game/${gameId}`);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Copy game ID to clipboard
@@ -140,8 +171,9 @@ const MultiplayerGame: React.FC = () => {
                   className="w-full py-6 text-lg bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 mb-8 group" 
                   onClick={createGame}
                   size="lg"
+                  disabled={isLoading}
                 >
-                  <span>Generate Game Code</span>
+                  <span>{isLoading ? "Generating..." : "Generate Game Code"}</span>
                   <ChevronsRight className="ml-2 h-5 w-5 opacity-70 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </motion.div>
@@ -221,8 +253,9 @@ const MultiplayerGame: React.FC = () => {
                   <Button 
                     onClick={joinGame}
                     className="bg-blue-600 hover:bg-blue-700"
+                    disabled={isLoading}
                   >
-                    Join
+                    {isLoading ? "Joining..." : "Join"}
                   </Button>
                 </div>
               </motion.div>

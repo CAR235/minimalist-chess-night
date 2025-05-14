@@ -2,21 +2,8 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { ChessBoard, PieceColor } from '@/models/ChessTypes';
 import { initializeBoard } from '@/utils/chessUtils';
-
-// In a real implementation, this would be replaced with Supabase client
-type GameState = {
-  board: ChessBoard;
-  players: {
-    white?: string;
-    black?: string;
-  };
-  lastUpdate: number;
-};
-
-// Mock in-memory database for demonstration purposes
-// In production, this would be replaced with Supabase real-time subscriptions
-const activeGames: Record<string, GameState> = {};
-const gameSubscribers: Record<string, ((board: ChessBoard) => void)[]> = {};
+import { useToast } from '@/components/ui/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useOnlineGame = (gameId: string) => {
   const [isConnected, setIsConnected] = useState(false);
@@ -24,113 +11,221 @@ export const useOnlineGame = (gameId: string) => {
   const [opponentConnected, setOpponentConnected] = useState(false);
   const playerIdRef = useRef(`player-${Math.random().toString(36).substring(2, 9)}`);
   const playerColorRef = useRef<PieceColor | null>(null);
+  const { toast } = useToast();
+  const [userId, setUserId] = useState<string | null>(null);
+  
+  // Check current auth status
+  useEffect(() => {
+    const getSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data.session?.user) {
+        setUserId(data.session.user.id);
+      } else {
+        // For demo purposes, generate a random ID when not authenticated
+        setUserId(playerIdRef.current);
+      }
+    };
+    
+    getSession();
+    
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      if (session?.user) {
+        setUserId(session.user.id);
+      }
+    });
+    
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
   
   // Join or create a game
   const joinGame = useCallback(async () => {
-    // This function would normally make a call to Supabase to join a game
-    // For now, we'll simulate this with our in-memory storage
+    if (!gameId || !userId) return { color: 'white' as PieceColor, initialBoard: null, opponentJoined: false };
     
-    let game = activeGames[gameId];
-    let color: PieceColor = 'white';
-    let opponentJoined = false;
-    
-    // If game exists
-    if (game) {
-      // Determine which color the player will be
-      if (!game.players.white) {
-        game.players.white = playerIdRef.current;
-        color = 'white';
-        opponentJoined = !!game.players.black;
-      } else if (!game.players.black) {
-        game.players.black = playerIdRef.current;
-        color = 'black';
-        opponentJoined = true;
+    try {
+      // Check if the game exists
+      const { data: existingGame } = await supabase
+        .from('chess_games')
+        .select('*')
+        .eq('id', gameId)
+        .single();
+      
+      let game = existingGame;
+      let color: PieceColor = 'white';
+      let opponentJoined = false;
+      
+      // If game exists
+      if (game) {
+        // Determine which color the player will be
+        if (!game.white_player) {
+          // Update the game with the player as white
+          await supabase
+            .from('chess_games')
+            .update({ white_player: userId })
+            .eq('id', gameId);
+          color = 'white';
+          opponentJoined = !!game.black_player;
+        } else if (!game.black_player) {
+          // Update the game with the player as black
+          await supabase
+            .from('chess_games')
+            .update({ black_player: userId })
+            .eq('id', gameId);
+          color = 'black';
+          opponentJoined = true;
+        } else if (game.white_player === userId) {
+          // Player is already white
+          color = 'white';
+          opponentJoined = !!game.black_player;
+        } else if (game.black_player === userId) {
+          // Player is already black
+          color = 'black';
+          opponentJoined = !!game.white_player;
+        } else {
+          // Game is full, but allow spectating
+          color = 'white'; // spectator defaults to white view
+        }
+        
+        // Re-fetch the updated game data
+        const { data: updatedGame } = await supabase
+          .from('chess_games')
+          .select('*')
+          .eq('id', gameId)
+          .single();
+        
+        if (updatedGame) {
+          game = updatedGame;
+        }
       } else {
-        // Game is full, but allow spectating
-        // In a real app, you'd handle this differently
-        color = 'white'; // spectator defaults to white view
+        // Create a new game
+        const initialBoard = initializeBoard();
+        await supabase
+          .from('chess_games')
+          .insert({
+            id: gameId,
+            board: initialBoard,
+            white_player: userId,
+            current_turn: 'white',
+            is_checkmate: false,
+            is_check: false
+          });
+        
+        // Get the created game
+        const { data: newGame } = await supabase
+          .from('chess_games')
+          .select('*')
+          .eq('id', gameId)
+          .single();
+        
+        if (newGame) {
+          game = newGame;
+          color = 'white';
+        }
       }
-    } else {
-      // Create a new game
-      game = {
-        board: initializeBoard(),
-        players: { white: playerIdRef.current },
-        lastUpdate: Date.now()
+      
+      playerColorRef.current = color;
+      setIsConnected(true);
+      setOpponentConnected(opponentJoined);
+      setIsPlayerTurn(color === 'white'); // white goes first
+      
+      console.log(`Joined game ${gameId} as ${color}`);
+      
+      // Return game data
+      return {
+        color,
+        initialBoard: game?.board,
+        opponentJoined
       };
-      activeGames[gameId] = game;
+    } catch (error) {
+      console.error('Error joining game:', error);
+      toast({
+        title: "Error",
+        description: "Failed to join the game. Please try again.",
+        variant: "destructive"
+      });
+      return { color: 'white' as PieceColor, initialBoard: null, opponentJoined: false };
     }
-    
-    playerColorRef.current = color;
-    setIsConnected(true);
-    setOpponentConnected(opponentJoined);
-    setIsPlayerTurn(color === 'white'); // white goes first
-    
-    console.log(`Joined game ${gameId} as ${color}`);
-    
-    // Return game data
-    return {
-      color,
-      initialBoard: game.board,
-      opponentJoined
-    };
-  }, [gameId]);
+  }, [gameId, userId, toast]);
   
   // Update the game state
-  const updateGameState = useCallback((newBoard: ChessBoard) => {
-    // This would normally be a call to update the Supabase database
+  const updateGameState = useCallback(async (newBoard: ChessBoard) => {
     if (!gameId || !isConnected) return;
     
-    // Update the in-memory game state
-    if (activeGames[gameId]) {
-      activeGames[gameId].board = newBoard;
-      activeGames[gameId].lastUpdate = Date.now();
-      
-      // Notify all subscribers
-      if (gameSubscribers[gameId]) {
-        gameSubscribers[gameId].forEach(callback => {
-          callback(newBoard);
-        });
-      }
+    try {
+      await supabase
+        .from('chess_games')
+        .update({
+          board: newBoard,
+          current_turn: newBoard.currentTurn,
+          is_checkmate: newBoard.isCheckmate,
+          is_check: newBoard.isCheck,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', gameId);
       
       // Update local state
       setIsPlayerTurn(newBoard.currentTurn === playerColorRef.current);
+    } catch (error) {
+      console.error('Error updating game state:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update the game state. Please try again.",
+        variant: "destructive"
+      });
     }
-  }, [gameId, isConnected]);
+  }, [gameId, isConnected, toast]);
   
   // Subscribe to game changes
   const subscribeToGameChanges = useCallback((callback: (board: ChessBoard) => void) => {
-    // This would normally be a Supabase subscription
     if (!gameId) return () => {};
     
-    if (!gameSubscribers[gameId]) {
-      gameSubscribers[gameId] = [];
-    }
-    
-    gameSubscribers[gameId].push(callback);
+    // Subscribe to realtime changes on the chess_games table
+    const channel = supabase
+      .channel(`public:chess_games:id=eq.${gameId}`)
+      .on('postgres_changes', { 
+        event: 'UPDATE', 
+        schema: 'public', 
+        table: 'chess_games',
+        filter: `id=eq.${gameId}`
+      }, (payload) => {
+        const updatedGame = payload.new;
+        if (updatedGame?.board) {
+          callback(updatedGame.board as ChessBoard);
+          
+          // Update player turn status
+          setIsPlayerTurn((updatedGame.board as ChessBoard).currentTurn === playerColorRef.current);
+        }
+      })
+      .subscribe();
     
     // Return unsubscribe function
     return () => {
-      if (gameSubscribers[gameId]) {
-        gameSubscribers[gameId] = gameSubscribers[gameId].filter(cb => cb !== callback);
-      }
+      supabase.removeChannel(channel);
     };
   }, [gameId]);
   
-  // Simulate opponent connection status check
+  // Check opponent connection status
   useEffect(() => {
-    if (!gameId || !isConnected) return;
+    if (!gameId || !isConnected || !playerColorRef.current) return;
     
-    const checkOpponentStatus = () => {
-      const game = activeGames[gameId];
+    const checkOpponentStatus = async () => {
+      const { data: game } = await supabase
+        .from('chess_games')
+        .select('white_player, black_player')
+        .eq('id', gameId)
+        .single();
+      
       if (game) {
-        const isWhitePlayer = game.players.white === playerIdRef.current;
-        const opponentExists = isWhitePlayer ? !!game.players.black : !!game.players.white;
+        const isWhitePlayer = playerColorRef.current === 'white';
+        const opponentExists = isWhitePlayer ? !!game.black_player : !!game.white_player;
         setOpponentConnected(opponentExists);
       }
     };
     
-    const interval = setInterval(checkOpponentStatus, 2000);
-    checkOpponentStatus(); // Check immediately
+    // Check immediately and then every 5 seconds
+    checkOpponentStatus();
+    const interval = setInterval(checkOpponentStatus, 5000);
     
     return () => {
       clearInterval(interval);

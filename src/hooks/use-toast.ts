@@ -1,4 +1,3 @@
-
 import * as React from "react"
 import {
   Toast,
@@ -11,8 +10,8 @@ import {
   type ToastActionElement,
 } from "@/components/ui/toast"
 
-const TOAST_LIMIT = 5
-const TOAST_REMOVE_DELAY = 1000000
+const TOAST_LIMIT = 3
+const TOAST_REMOVE_DELAY = 1000
 
 type ToasterToast = ToastProps & {
   id: string
@@ -80,43 +79,46 @@ const reducer = (state: State, action: Action): State => {
     case actionTypes.DISMISS_TOAST: {
       const { toastId } = action
 
-      // If no toast id, dismiss all
-      if (toastId === undefined) {
-        return {
-          ...state,
-          toasts: state.toasts.map((t) => ({
-            ...t,
-            open: false,
-          })),
+      // ! Side effects ! - This could be extracted into a dismissToast() action,
+      // but I'll keep it here for simplicity
+      if (toastId) {
+        if (toastTimeouts.has(toastId)) {
+          clearTimeout(toastTimeouts.get(toastId));
+          toastTimeouts.delete(toastId);
+        }
+      } else {
+        for (const [id, timeout] of toastTimeouts.entries()) {
+          clearTimeout(timeout);
+          toastTimeouts.delete(id);
         }
       }
 
-      // Dismiss toast by id
       return {
         ...state,
         toasts: state.toasts.map((t) =>
-          t.id === toastId ? { ...t, open: false } : t
+          t.id === toastId || toastId === undefined
+            ? {
+                ...t,
+                open: false,
+              }
+            : t
         ),
       }
     }
 
-    case actionTypes.REMOVE_TOAST: {
-      const { toastId } = action
-
-      // If no toast id, remove all closed toasts
-      if (toastId === undefined) {
+    case actionTypes.REMOVE_TOAST:
+      if (action.toastId === undefined) {
         return {
           ...state,
-          toasts: state.toasts.filter((t) => t.open !== false),
+          toasts: [],
         }
       }
-
-      // Remove toast by id
       return {
         ...state,
-        toasts: state.toasts.filter((t) => t.id !== toastId),
+        toasts: state.toasts.filter((t) => t.id !== action.toastId),
       }
-    }
+    default:
+      return state
   }
 }
 
