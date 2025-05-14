@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -29,13 +28,13 @@ const PlayLocal: React.FC = () => {
   const isCPUGame = !!locationState;
   
   // Make CPU move
-  const { makeCPUMove } = useMakeCPUMove();
+  const makeCPUMove = useMakeCPUMove(difficulty);
   
   // Make CPU move if it's the CPU's turn
   useEffect(() => {
     if (isCPUGame && board.currentTurn !== playerColor && !board.isCheckmate) {
       const cpuMoveTimeout = setTimeout(() => {
-        const updatedBoard = makeCPUMove(board, difficulty);
+        const updatedBoard = makeCPUMove(board);
         setBoard(updatedBoard);
         
         if (updatedBoard.isCheck) {

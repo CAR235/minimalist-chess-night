@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { ArrowRight, Users } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 export default function Home() {
   const [onlinePlayers, setOnlinePlayers] = useState(0);
@@ -33,69 +33,35 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#121620] flex flex-col items-center justify-center p-4">
-      <div className="max-w-2xl mx-auto text-center">
-        <motion.h1 
-          className="text-5xl md:text-7xl font-bold mb-6"
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.5 }}
-        >
-          <span className="text-white">Chess</span>
-          <span className="text-amber-400">Master</span>
-        </motion.h1>
-        
-        <motion.p 
-          className="text-xl text-gray-300 mb-8"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-        >
-          Experience the ultimate chess gameplay with an<br />
-          elegant, modern interface
-        </motion.p>
-        
-        <motion.div
-          className="text-emerald-400 mb-12 flex items-center justify-center gap-2"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-        >
-          <Users size={18} />
-          <span>{onlinePlayers} players online now</span>
-        </motion.div>
-        
-        <motion.div 
-          className="flex flex-wrap justify-center gap-4"
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.4 }}
-        >
-          <Link to="/multiplayer">
-            <Button className="px-8 py-6 text-lg bg-amber-500 hover:bg-amber-600 text-white flex items-center gap-2">
-              Play Online <ArrowRight size={18} />
-            </Button>
-          </Link>
-          <Link to="/play-local">
-            <Button className="px-8 py-6 text-lg bg-neutral-800 hover:bg-neutral-700 text-white">
-              Play Locally
-            </Button>
-          </Link>
-        </motion.div>
+    <div className="flex flex-col min-h-screen bg-[url('/chess-bg.jpg')] bg-cover bg-center">
+      <div className="flex-1 flex flex-col justify-center items-center p-4 backdrop-blur-sm bg-black/40">
+        <div className="max-w-md w-full text-center space-y-8">
+          <div>
+            <h1 className="text-5xl font-extrabold text-white mb-6">
+              Chess<span className="text-amber-400">Master</span>
+            </h1>
+            <p className="text-xl text-gray-200 mb-8">
+              Play chess online or locally with friends
+            </p>
+            <div className="text-green-400 mb-8">
+              {onlinePlayers} players online now
+            </div>
+          </div>
+          
+          <div className="space-y-4">
+            <Link to="/multiplayer" className="w-full block">
+              <Button className="w-full py-6 bg-amber-500 hover:bg-amber-600 text-xl">
+                Play Online <ArrowRight className="ml-2" />
+              </Button>
+            </Link>
+            <Link to="/local-game" className="w-full block">
+              <Button variant="outline" className="w-full py-6 text-white bg-transparent border-white hover:bg-white/10 text-xl">
+                Play Locally
+              </Button>
+            </Link>
+          </div>
+        </div>
       </div>
-      
-      <motion.div 
-        className="mt-16 flex items-center justify-center gap-8 opacity-60"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 0.6 }}
-        transition={{ delay: 0.6 }}
-      >
-        <div className="text-white text-3xl">♞</div>
-        <div className="text-white text-3xl">♟</div>
-        <div className="text-white text-3xl">♚</div>
-        <div className="text-white text-3xl">♜</div>
-        <div className="text-white text-3xl">♛</div>
-      </motion.div>
     </div>
   );
 }
