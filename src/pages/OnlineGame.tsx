@@ -9,8 +9,8 @@ import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import { useOnlineGame } from '@/hooks/useOnlineGame';
 import { Card, CardContent } from '@/components/ui/card';
-import { Copy, ChevronLeft, Users, Clock } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Copy, ChevronLeft, Users, Clock, Shield, AlertTriangle, CheckCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const OnlineGame: React.FC = () => {
@@ -19,13 +19,13 @@ const OnlineGame: React.FC = () => {
   const { toast } = useToast();
   const [playerColor, setPlayerColor] = useState<PieceColor | null>(null);
   const [board, setBoard] = useState<ChessBoardType>(initializeBoard());
-  const [waitingForOpponent, setWaitingForOpponent] = useState(true);
   const isMobile = useIsMobile();
   
   const { 
     isConnected, 
     isPlayerTurn, 
     opponentConnected,
+    waitingForOpponent,
     updateGameState, 
     subscribeToGameChanges,
     joinGame
@@ -45,7 +45,6 @@ const OnlineGame: React.FC = () => {
         }
         
         if (opponentJoined) {
-          setWaitingForOpponent(false);
           toast({
             title: "Game started!",
             description: `You are playing as ${color === 'white' ? 'White' : 'Black'}.`
@@ -65,7 +64,6 @@ const OnlineGame: React.FC = () => {
     // Subscribe to game changes
     const unsubscribe = subscribeToGameChanges((newBoard) => {
       setBoard(newBoard);
-      setWaitingForOpponent(false);
       
       // Check for game status notifications
       if (newBoard.isCheck && !newBoard.isCheckmate) {
@@ -185,7 +183,6 @@ const OnlineGame: React.FC = () => {
   
   // Handle resignation
   const handleResign = async () => {
-    // In a real game, we would update the game state to mark it as resigned
     toast({
       title: "Game Forfeit",
       description: `You resigned the game. ${playerColor === 'white' ? 'Black' : 'White'} wins.`,
@@ -194,94 +191,173 @@ const OnlineGame: React.FC = () => {
   };
   
   return (
-    <div className="min-h-screen flex flex-col items-center bg-chess-background p-4">
-      <motion.div 
-        className="mb-6 w-full max-w-6xl"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <div className="flex flex-wrap justify-between items-center mb-4">
-          <Button 
-            variant="ghost" 
-            className="text-white/70 hover:text-white mr-2" 
-            onClick={() => navigate('/multiplayer')}
-          >
-            <ChevronLeft className="mr-2 h-4 w-4" />
-            Back to Lobby
-          </Button>
-          
-          <div className="flex items-center ml-auto">
-            <div className="flex items-center mr-4 bg-neutral-800 py-1 px-3 rounded">
-              <span className="text-neutral-400 text-sm mr-2">Game ID:</span>
-              <span className="font-mono text-white">{gameId}</span>
-              <Button variant="ghost" size="icon" className="ml-1 h-6 w-6" onClick={copyGameId}>
-                <Copy className="h-3 w-3" />
-              </Button>
+    <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 px-4 py-6 text-white">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <motion.div 
+          className="mb-6"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="flex flex-wrap justify-between items-center mb-4">
+            <Button 
+              variant="ghost" 
+              className="text-white/80 hover:text-white hover:bg-white/10" 
+              onClick={() => navigate('/multiplayer')}
+            >
+              <ChevronLeft className="mr-2 h-4 w-4" />
+              Back to Lobby
+            </Button>
+            
+            <div className="flex items-center ml-auto space-x-2">
+              <div className="flex items-center py-1.5 px-3 rounded-full bg-white/10 backdrop-blur-sm border border-white/10">
+                <span className="text-white/60 text-sm mr-2">Game ID:</span>
+                <code className="font-mono text-amber-300">{gameId}</code>
+                <Button variant="ghost" size="icon" className="ml-1 h-6 w-6 hover:bg-white/10 text-white/60 hover:text-white" onClick={copyGameId}>
+                  <Copy className="h-3.5 w-3.5" />
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
+          
+          {/* Game Status */}
+          <AnimatePresence mode="wait">
+            {waitingForOpponent ? (
+              <motion.div 
+                key="waiting"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ 
+                  opacity: 1, 
+                  y: 0,
+                }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+                className="bg-indigo-500/20 border border-indigo-500/30 p-3 rounded-lg mb-4 flex items-center"
+              >
+                <Clock className="mr-2 h-5 w-5 text-indigo-300 animate-pulse" />
+                <div>
+                  <div className="font-semibold text-indigo-200">Waiting for opponent to join</div>
+                  <div className="text-sm text-indigo-300/80">Share the game ID with a friend to play together</div>
+                </div>
+              </motion.div>
+            ) : !opponentConnected ? (
+              <motion.div 
+                key="disconnected"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+                className="bg-amber-500/20 border border-amber-500/30 p-3 rounded-lg mb-4 flex items-center"
+              >
+                <AlertTriangle className="mr-2 h-5 w-5 text-amber-300" />
+                <div>
+                  <div className="font-semibold text-amber-200">Opponent disconnected</div>
+                  <div className="text-sm text-amber-300/80">Waiting for reconnection...</div>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div 
+                key="connected"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+                className="bg-emerald-500/20 border border-emerald-500/30 p-3 rounded-lg mb-4 flex items-center"
+              >
+                <Users className="mr-2 h-5 w-5 text-emerald-300" />
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full">
+                  <div>
+                    <div className="font-semibold">
+                      {isTurnToPlay ? (
+                        <span className="text-emerald-300">Your turn</span>
+                      ) : (
+                        <span className="text-amber-300">Opponent's turn</span>
+                      )}
+                    </div>
+                    <div className="text-sm text-white/70">Playing as {playerColor === 'white' ? 'White ♙' : 'Black ♟︎'}</div>
+                  </div>
+                  <div className="mt-1 sm:mt-0">
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      isTurnToPlay 
+                        ? 'bg-emerald-500/20 text-emerald-200 border border-emerald-500/30' 
+                        : 'bg-amber-500/20 text-amber-200 border border-amber-500/30'
+                    }`}>
+                      {isTurnToPlay ? (
+                        <>
+                          <CheckCircle className="mr-1 h-3 w-3" /> 
+                          Active
+                        </>
+                      ) : (
+                        <>
+                          <Clock className="mr-1 h-3 w-3" /> 
+                          Waiting
+                        </>
+                      )}
+                    </span>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
         
-        {waitingForOpponent ? (
+        {/* Game Area */}
+        <div className="flex flex-col lg:flex-row items-start gap-6">
+          {/* Chess Board */}
           <motion.div 
-            className="bg-neutral-800 p-3 rounded-lg text-amber-500 mb-4 flex items-center"
-            animate={{ 
-              opacity: [0.7, 1, 0.7],
-            }}
-            transition={{ 
-              duration: 2,
-              repeat: Infinity,
-            }}
+            className="w-full lg:w-2/3"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <Clock className="mr-2 h-4 w-4 animate-pulse" />
-            Waiting for opponent to join...
+            <Card className="p-3 bg-slate-800/50 backdrop-blur-sm border border-white/10 shadow-xl">
+              <CardContent className="p-0">
+                <ChessBoard 
+                  board={board} 
+                  onSquareClick={handleSquareClick}
+                  flipped={flippedBoard}
+                />
+              </CardContent>
+            </Card>
           </motion.div>
-        ) : !opponentConnected ? (
-          <div className="bg-neutral-800 p-3 rounded-lg text-red-500 mb-4 flex items-center">
-            <Users className="mr-2 h-4 w-4" />
-            Opponent disconnected. Waiting for reconnection...
-          </div>
-        ) : (
-          <div className="bg-neutral-800 p-3 rounded-lg mb-4 flex items-center">
-            <Users className="mr-2 h-4 w-4 text-emerald-500" />
-            <span className={`font-medium ${isTurnToPlay ? 'text-emerald-500' : 'text-amber-500'}`}>
-              {isTurnToPlay ? "Your turn" : "Opponent's turn"}
-            </span>
-            <span className="mx-2 text-neutral-500">•</span>
-            <span className="text-white">Playing as {playerColor === 'white' ? 'White' : 'Black'}</span>
-          </div>
-        )}
-      </motion.div>
-      
-      <div className="flex flex-col lg:flex-row items-start gap-6 w-full max-w-6xl">
-        <motion.div 
-          className="w-full lg:w-2/3"
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          <Card className="p-2 bg-neutral-900 border-neutral-700">
-            <CardContent className="p-0">
-              <ChessBoard 
-                board={board} 
-                onSquareClick={handleSquareClick}
-                flipped={flippedBoard}
-              />
-            </CardContent>
-          </Card>
-        </motion.div>
-        <motion.div 
-          className="w-full lg:w-1/3"
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-        >
-          <GameInfo 
-            board={board} 
-            onReset={handleReset}
-            onResign={handleResign}
-          />
-        </motion.div>
+          
+          {/* Game Info */}
+          <motion.div 
+            className="w-full lg:w-1/3"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            <GameInfo 
+              board={board} 
+              onReset={handleReset}
+              onResign={handleResign}
+            />
+            
+            {/* Player Badge */}
+            <motion.div 
+              className="mt-4 p-4 rounded-lg border border-white/10 bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6 }}
+            >
+              <div className="flex items-center">
+                <Shield className={`h-5 w-5 mr-2 ${playerColor === 'white' ? 'text-amber-300' : 'text-indigo-400'}`} />
+                <div>
+                  <div className="text-sm text-white/60">Playing as</div>
+                  <div className="font-semibold">
+                    {playerColor === 'white' ? (
+                      <span className="text-amber-300">White Player</span>
+                    ) : (
+                      <span className="text-indigo-400">Black Player</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        </div>
       </div>
     </div>
   );

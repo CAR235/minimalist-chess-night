@@ -197,6 +197,15 @@ export const useOnlineGame = (gameId: string) => {
           // Update player turn status
           setIsPlayerTurn(deserializedBoard.currentTurn === playerColorRef.current);
         }
+
+        // Check if opponent has connected or disconnected
+        if (playerColorRef.current === 'white' && updatedGame?.black_player) {
+          setOpponentConnected(true);
+          setWaitingForOpponent(false);
+        } else if (playerColorRef.current === 'black' && updatedGame?.white_player) {
+          setOpponentConnected(true);
+          setWaitingForOpponent(false);
+        }
       })
       .subscribe();
     
@@ -205,6 +214,9 @@ export const useOnlineGame = (gameId: string) => {
       supabase.removeChannel(channel);
     };
   }, [gameId]);
+  
+  // State to track if we're waiting for an opponent
+  const [waitingForOpponent, setWaitingForOpponent] = useState(true);
   
   // Check opponent connection status
   useEffect(() => {
@@ -220,13 +232,15 @@ export const useOnlineGame = (gameId: string) => {
       if (game) {
         const isWhitePlayer = playerColorRef.current === 'white';
         const opponentExists = isWhitePlayer ? !!game.black_player : !!game.white_player;
+        
         setOpponentConnected(opponentExists);
+        setWaitingForOpponent(!opponentExists);
       }
     };
     
-    // Check immediately and then every 5 seconds
+    // Check immediately and then every 3 seconds
     checkOpponentStatus();
-    const interval = setInterval(checkOpponentStatus, 5000);
+    const interval = setInterval(checkOpponentStatus, 3000);
     
     return () => {
       clearInterval(interval);
@@ -237,6 +251,7 @@ export const useOnlineGame = (gameId: string) => {
     isConnected,
     isPlayerTurn,
     opponentConnected,
+    waitingForOpponent,
     joinGame,
     updateGameState,
     subscribeToGameChanges,
