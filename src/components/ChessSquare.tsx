@@ -20,12 +20,12 @@ const ChessSquare: React.FC<ChessSquareProps> = ({
   isValidMove,
   onClick,
 }) => {
-  // Use more distinctive colors for the board squares
-  let bgColor = isLight ? 'bg-amber-100' : 'bg-amber-800';
+  // Use classic chess board colors
+  let bgColor = isLight ? 'bg-white' : 'bg-gray-400';
   
   // Apply highlighting styles
   if (isSelected) {
-    bgColor = 'bg-blue-500';
+    bgColor = 'bg-blue-300';
   }
 
   // Combine all of our styles
@@ -37,18 +37,18 @@ const ChessSquare: React.FC<ChessSquareProps> = ({
       
       {/* Show valid move indicator */}
       {isValidMove && (
-        <div className="absolute w-1/3 h-1/3 rounded-full bg-green-500/50 opacity-75"></div>
+        <div className="absolute w-1/3 h-1/3 rounded-full bg-green-500/50"></div>
       )}
       
       {/* Show row/column notations */}
       {position.col === 0 && (
-        <span className="absolute bottom-0 left-1 text-xs opacity-70">
+        <span className="absolute bottom-0 left-1 text-xs text-gray-800">
           {8 - position.row}
         </span>
       )}
       
       {position.row === 7 && (
-        <span className="absolute bottom-0 right-1 text-xs opacity-70">
+        <span className="absolute bottom-0 right-1 text-xs text-gray-800">
           {String.fromCharCode(97 + position.col)}
         </span>
       )}

@@ -29,13 +29,14 @@ const ChessBoard: React.FC<Props> = ({ board, onSquareClick, flipped = false }) 
       move => move.row === row && move.col === col
     );
     
-    // Create correct component key based on the logical position, not display position
+    // Use logical position for the key and the actual square coloring
+    // Classic chessboard has white square at bottom right (isLight when sum is even)
     return (
       <ChessSquare
         key={`${row}-${col}`}
         position={position}
         piece={piece}
-        isLight={(row + col) % 2 === 1} // This was the bug - using displayRow/Col instead of logical row/col
+        isLight={(row + col) % 2 === 0} // Changed to match traditional chess board coloring
         isSelected={isSelected}
         isValidMove={isValidMove}
         onClick={() => onSquareClick(position)}
@@ -65,7 +66,7 @@ const ChessBoard: React.FC<Props> = ({ board, onSquareClick, flipped = false }) 
 
   return (
     <motion.div 
-      className="w-full aspect-square overflow-hidden shadow-md rounded-md border border-border"
+      className="w-full aspect-square overflow-hidden shadow-md rounded-md border border-gray-300"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
