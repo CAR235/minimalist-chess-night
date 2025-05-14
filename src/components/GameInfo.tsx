@@ -19,11 +19,25 @@ const GameInfo: React.FC<GameInfoProps> = ({ board, onReset }) => {
       <div className="flex flex-wrap gap-1">
         {pieces.map((piece, index) => (
           <span key={index} className="text-lg">
-            {piece.symbol}
+            {getPieceSymbol(piece)}
           </span>
         ))}
       </div>
     );
+  };
+  
+  const getPieceSymbol = (piece: Piece): string => {
+    // Simple mapping for piece symbols
+    const symbols = {
+      pawn: '♟',
+      rook: '♜',
+      knight: '♞',
+      bishop: '♝',
+      queen: '♛',
+      king: '♚'
+    };
+    
+    return symbols[piece.type];
   };
   
   let statusMessage = `${board.currentTurn === 'white' ? 'White' : 'Black'}'s turn`;

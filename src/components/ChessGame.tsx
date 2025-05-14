@@ -14,6 +14,11 @@ const ChessGame: React.FC = () => {
   const handleSquareClick = (position: Position) => {
     const clickedPiece = getPieceAtPosition(board, position);
     
+    // If the game is over, don't allow moves
+    if (board.isCheckmate) {
+      return;
+    }
+    
     // If a piece is already selected
     if (board.selectedPiece) {
       // If clicking on the same piece, deselect it
@@ -43,6 +48,7 @@ const ChessGame: React.FC = () => {
         
         setBoard(updatedBoard);
         
+        // Check notification after the move
         if (updatedBoard.isCheck && !updatedBoard.isCheckmate) {
           toast({
             title: "Check!",
@@ -51,9 +57,11 @@ const ChessGame: React.FC = () => {
         }
         
         if (updatedBoard.isCheckmate) {
+          // The winner is the opposite of currentTurn since the turn has already changed
+          const winner = updatedBoard.currentTurn === 'white' ? 'Black' : 'White';
           toast({
             title: "Checkmate!",
-            description: `${updatedBoard.currentTurn === 'black' ? 'White' : 'Black'} wins the game.`,
+            description: `${winner} wins the game.`,
             variant: "destructive"
           });
         }
