@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ChessBoard from '@/components/ChessBoard';
 import GameInfo from '@/components/GameInfo';
-import { Position, ChessBoard as ChessBoardType, PieceColor } from '@/models/ChessTypes';
+import { Position, ChessBoard as ChessBoardType, PieceColor, deserializeChessBoard } from '@/models/ChessTypes';
 import { initializeBoard, getPieceAtPosition, getValidMovesForPiece, makeMove } from '@/utils/chessUtils';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';

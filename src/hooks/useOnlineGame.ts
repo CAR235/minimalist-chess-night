@@ -1,6 +1,6 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { ChessBoard, PieceColor } from '@/models/ChessTypes';
+import { ChessBoard, PieceColor, deserializeChessBoard, serializeChessBoard } from '@/models/ChessTypes';
 import { initializeBoard } from '@/utils/chessUtils';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -104,7 +104,7 @@ export const useOnlineGame = (gameId: string) => {
           .from('chess_games')
           .insert({
             id: gameId,
-            board: initialBoard,
+            board: serializeChessBoard(initialBoard),
             white_player: userId,
             current_turn: 'white',
             is_checkmate: false,
@@ -134,7 +134,7 @@ export const useOnlineGame = (gameId: string) => {
       // Return game data
       return {
         color,
-        initialBoard: game?.board,
+        initialBoard: game?.board ? deserializeChessBoard(game.board) : null,
         opponentJoined
       };
     } catch (error) {
@@ -156,7 +156,7 @@ export const useOnlineGame = (gameId: string) => {
       await supabase
         .from('chess_games')
         .update({
-          board: newBoard,
+          board: serializeChessBoard(newBoard),
           current_turn: newBoard.currentTurn,
           is_checkmate: newBoard.isCheckmate,
           is_check: newBoard.isCheck,
@@ -191,10 +191,11 @@ export const useOnlineGame = (gameId: string) => {
       }, (payload) => {
         const updatedGame = payload.new;
         if (updatedGame?.board) {
-          callback(updatedGame.board as ChessBoard);
+          const deserializedBoard = deserializeChessBoard(updatedGame.board);
+          callback(deserializedBoard);
           
           // Update player turn status
-          setIsPlayerTurn((updatedGame.board as ChessBoard).currentTurn === playerColorRef.current);
+          setIsPlayerTurn(deserializedBoard.currentTurn === playerColorRef.current);
         }
       })
       .subscribe();
