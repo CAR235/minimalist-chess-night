@@ -90,10 +90,7 @@ const formatMove = (move: Move): string => {
   // Capture notation
   const capture = move.capturedPiece ? "x" : "";
   
-  // Check or checkmate notation
-  let checkSymbol = "";
-  
-  return `${pieceSymbol}${from}${capture}${to}${checkSymbol}`;
+  return `${pieceSymbol}${from}${capture}${to}`;
 };
 
 // Helper to get piece symbol

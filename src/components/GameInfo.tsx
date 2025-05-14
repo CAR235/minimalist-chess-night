@@ -60,7 +60,7 @@ const GameInfo: React.FC<GameInfoProps> = ({ board, onReset, onResign }) => {
   
   return (
     <div className="w-full space-y-4">
-      <Card className="border shadow-md">
+      <Card className="border border-border shadow-md">
         <CardHeader className="pb-2 border-b">
           <CardTitle className="text-lg">Game Status</CardTitle>
         </CardHeader>
@@ -92,10 +92,9 @@ const GameInfo: React.FC<GameInfoProps> = ({ board, onReset, onResign }) => {
             
             {onResign && (
               <Button 
-                variant="outline" 
+                variant="destructive" 
                 size="sm" 
                 onClick={onResign}
-                variant="destructive"
               >
                 <Flag className="h-4 w-4 mr-2" /> 
                 Resign
@@ -105,7 +104,7 @@ const GameInfo: React.FC<GameInfoProps> = ({ board, onReset, onResign }) => {
         </CardContent>
       </Card>
       
-      <Card className="border shadow-md h-80">
+      <Card className="border border-border shadow-md h-80">
         <CardHeader className="pb-2 border-b">
           <CardTitle className="text-lg">Move History</CardTitle>
         </CardHeader>
