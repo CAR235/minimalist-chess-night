@@ -1,61 +1,69 @@
 
 import React from 'react';
 import ChessSquare from './ChessSquare';
-import ChessPiece from './ChessPiece';
-import { ChessBoard as ChessBoardType, Piece, Position } from '../models/ChessTypes';
-import { BOARD_SIZE, getPieceAtPosition, getValidMovesForPiece } from '../utils/chessUtils';
+import { ChessBoard as ChessBoardType, Position } from '../models/ChessTypes';
 
-interface ChessBoardProps {
+interface Props {
   board: ChessBoardType;
   onSquareClick: (position: Position) => void;
+  flipped?: boolean; // Add flipped prop for multiplayer mode
 }
 
-const ChessBoard: React.FC<ChessBoardProps> = ({ board, onSquareClick }) => {
-  // Generate the squares of the chess board
-  const renderSquares = () => {
-    const squares = [];
+const ChessBoard: React.FC<Props> = ({ board, onSquareClick, flipped = false }) => {
+  const renderSquare = (row: number, col: number) => {
+    // If board is flipped, invert the coordinates
+    const displayRow = flipped ? 7 - row : row;
+    const displayCol = flipped ? 7 - col : col;
+    
+    const position = { row, col };
+    const piece = board.pieces.find(
+      p => p.position.row === row && p.position.col === col
+    );
+    
+    const isSelected = board.selectedPiece && 
+      board.selectedPiece.position.row === row && 
+      board.selectedPiece.position.col === col;
+      
+    const isValidMove = board.validMoves.some(
+      move => move.row === row && move.col === col
+    );
+    
+    return (
+      <ChessSquare
+        key={`${displayRow}-${displayCol}`}
+        position={position}
+        piece={piece}
+        isLight={(displayRow + displayCol) % 2 === 1}
+        isSelected={isSelected}
+        isValidMove={isValidMove}
+        onClick={() => onSquareClick(position)}
+      />
+    );
+  };
 
-    for (let row = 0; row < BOARD_SIZE; row++) {
-      for (let col = 0; col < BOARD_SIZE; col++) {
-        const position = { row, col };
-        const piece = getPieceAtPosition(board, position);
-        const isLightSquare = (row + col) % 2 !== 0;
-        const isSelected = board.selectedPiece && 
-                          board.selectedPiece.position.row === row && 
-                          board.selectedPiece.position.col === col;
-        
-        const isValidMove = board.validMoves.some(move => 
-          move.row === row && move.col === col
-        );
-        
-        const isKingInCheck = piece?.type === 'king' && 
-                              board.isCheck && 
-                              piece.color === board.currentTurn;
-
-        squares.push(
-          <ChessSquare
-            key={`${row}-${col}`}
-            position={position}
-            isLightSquare={isLightSquare}
-            isSelected={isSelected}
-            isValidMove={isValidMove}
-            isCheck={isKingInCheck}
-            onClick={() => onSquareClick(position)}
-          >
-            {piece && <ChessPiece piece={piece} />}
-          </ChessSquare>
-        );
+  // Create board grid - if flipped, we need to render the rows in reverse order
+  const renderBoard = () => {
+    const rows = [];
+    
+    for (let row = 0; row < 8; row++) {
+      const squareRow = [];
+      for (let col = 0; col < 8; col++) {
+        squareRow.push(renderSquare(row, col));
       }
+      rows.push(
+        <div key={row} className="flex">
+          {squareRow}
+        </div>
+      );
     }
-
-    return squares;
+    
+    // If board is flipped, reverse the rows
+    return flipped ? rows.reverse() : rows;
   };
 
   return (
-    <div className="w-full max-w-md mx-auto aspect-square">
-      <div className="grid grid-cols-8 grid-rows-8 border border-gray-700 shadow-lg">
-        {renderSquares()}
-      </div>
+    <div className="w-full max-w-md md:max-w-lg lg:max-w-xl aspect-square border border-gray-700 rounded overflow-hidden shadow-lg">
+      {renderBoard()}
     </div>
   );
 };
