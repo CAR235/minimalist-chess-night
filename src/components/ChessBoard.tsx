@@ -29,12 +29,13 @@ const ChessBoard: React.FC<Props> = ({ board, onSquareClick, flipped = false }) 
       move => move.row === row && move.col === col
     );
     
+    // Create correct component key based on the logical position, not display position
     return (
       <ChessSquare
-        key={`${displayRow}-${displayCol}`}
+        key={`${row}-${col}`}
         position={position}
         piece={piece}
-        isLight={(displayRow + displayCol) % 2 === 1}
+        isLight={(row + col) % 2 === 1} // This was the bug - using displayRow/Col instead of logical row/col
         isSelected={isSelected}
         isValidMove={isValidMove}
         onClick={() => onSquareClick(position)}
