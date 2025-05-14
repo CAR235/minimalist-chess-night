@@ -36,6 +36,10 @@
   body {
     @apply bg-chess-background text-foreground;
   }
+
+  ::selection {
+    @apply bg-amber-500/30 text-white;
+  }
 }
 
 /* Chess-specific styles */
@@ -48,10 +52,27 @@
   align-items: center;
   font-size: calc(min(8vw, 40px));
   user-select: none;
+  transition: transform 0.1s ease;
+}
+
+.chess-piece:hover {
+  transform: scale(1.1);
 }
 
 @media (min-width: 768px) {
   .chess-piece {
     font-size: 2.5rem;
   }
+}
+
+/* Animation for valid moves */
+@keyframes pulse {
+  0% { opacity: 0.5; transform: scale(0.95); }
+  50% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0.5; transform: scale(0.95); }
+}
+
+/* Apply the animation to valid move indicators */
+.valid-move-indicator {
+  animation: pulse 2s infinite ease-in-out;
 }

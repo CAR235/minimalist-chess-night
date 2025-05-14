@@ -1,69 +1,59 @@
 
 import React from 'react';
-import { Position } from '../models/ChessTypes';
-import { cn } from '@/lib/utils';
+import ChessPiece from './ChessPiece';
+import { Position, Piece } from '../models/ChessTypes';
 
-interface ChessSquareProps {
+export interface ChessSquareProps {
   position: Position;
-  isLightSquare: boolean;
+  piece?: Piece | undefined;
+  isLight: boolean;
   isSelected: boolean;
   isValidMove: boolean;
-  isCheck: boolean;
   onClick: () => void;
-  children?: React.ReactNode;
 }
 
 const ChessSquare: React.FC<ChessSquareProps> = ({
   position,
-  isLightSquare,
+  piece,
+  isLight,
   isSelected,
   isValidMove,
-  isCheck,
   onClick,
-  children
 }) => {
-  const file = String.fromCharCode(97 + position.col); // 'a' through 'h'
-  const rank = 8 - position.row; // 1 through 8
+  // Base styles based on the square's color
+  let bgColor = isLight ? 'bg-chess-lightSquare' : 'bg-chess-darkSquare';
   
-  const isFirstRow = position.row === 7;
-  const isFirstCol = position.col === 0;
-  
+  // Apply highlighting styles
+  if (isSelected) {
+    bgColor = 'bg-chess-selected';
+  } else if (isValidMove) {
+    bgColor = isLight ? 'bg-chess-lightSquare' : 'bg-chess-darkSquare';
+  }
+
+  // Combine all of our styles
+  const squareClass = `w-1/8 h-1/8 flex items-center justify-center relative ${bgColor} transition-colors`;
+
   return (
-    <div 
-      className={cn(
-        'relative w-full pb-[100%] cursor-pointer transition-colors',
-        isLightSquare ? 'bg-chess-lightSquare' : 'bg-chess-darkSquare',
-        isSelected && 'bg-chess-selected',
-        isValidMove && 'bg-chess-highlight',
-        isCheck && 'bg-red-900/50'
-      )}
-      onClick={onClick}
-    >
-      {/* File notation (a-h) */}
-      {isFirstRow && (
-        <div className="absolute bottom-0 right-1 text-chess-notation text-xs opacity-60">
-          {file}
-        </div>
+    <div className={squareClass} onClick={onClick}>
+      {piece && <ChessPiece piece={piece} />}
+      
+      {/* Show valid move indicator */}
+      {isValidMove && (
+        <div className="absolute w-1/3 h-1/3 rounded-full bg-chess-possible opacity-75"></div>
       )}
       
-      {/* Rank notation (1-8) */}
-      {isFirstCol && (
-        <div className="absolute top-0 left-1 text-chess-notation text-xs opacity-60">
-          {rank}
-        </div>
+      {/* Show row/column notations */}
+      {position.col === 0 && (
+        <span className="absolute bottom-0 left-1 text-xs text-chess-notation">
+          {8 - position.row}
+        </span>
       )}
       
-      {/* Valid move indicator */}
-      {isValidMove && !children && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-3 h-3 rounded-full bg-chess-possible" />
-        </div>
+      {position.row === 7 && (
+        <span className="absolute bottom-0 right-1 text-xs text-chess-notation">
+          {String.fromCharCode(97 + position.col)}
+        </span>
       )}
-      
-      {/* Piece */}
-      <div className="absolute inset-0 flex items-center justify-center">
-        {children}
-      </div>
     </div>
   );
 };

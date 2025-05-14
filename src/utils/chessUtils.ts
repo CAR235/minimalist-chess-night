@@ -1,54 +1,43 @@
-import { Piece, PieceType, PieceColor, Position, ChessBoard, Move } from "../models/ChessTypes";
+import { ChessBoard, Piece, PieceColor, PieceType, Position } from '../models/ChessTypes';
 
-// Constants
-export const BOARD_SIZE = 8;
+const initialPieces = (): Piece[] => [
+  { type: 'rook', color: 'white', position: { row: 7, col: 0 } },
+  { type: 'knight', color: 'white', position: { row: 7, col: 1 } },
+  { type: 'bishop', color: 'white', position: { row: 7, col: 2 } },
+  { type: 'queen', color: 'white', position: { row: 7, col: 3 } },
+  { type: 'king', color: 'white', position: { row: 7, col: 4 } },
+  { type: 'bishop', color: 'white', position: { row: 7, col: 5 } },
+  { type: 'knight', color: 'white', position: { row: 7, col: 6 } },
+  { type: 'rook', color: 'white', position: { row: 7, col: 7 } },
+  { type: 'pawn', color: 'white', position: { row: 6, col: 0 } },
+  { type: 'pawn', color: 'white', position: { row: 6, col: 1 } },
+  { type: 'pawn', color: 'white', position: { row: 6, col: 2 } },
+  { type: 'pawn', color: 'white', position: { row: 6, col: 3 } },
+  { type: 'pawn', color: 'white', position: { row: 6, col: 4 } },
+  { type: 'pawn', color: 'white', position: { row: 6, col: 5 } },
+  { type: 'pawn', color: 'white', position: { row: 6, col: 6 } },
+  { type: 'pawn', color: 'white', position: { row: 6, col: 7 } },
 
-// Initialize a new chess board
+  { type: 'rook', color: 'black', position: { row: 0, col: 0 } },
+  { type: 'knight', color: 'black', position: { row: 0, col: 1 } },
+  { type: 'bishop', color: 'black', position: { row: 0, col: 2 } },
+  { type: 'queen', color: 'black', position: { row: 0, col: 3 } },
+  { type: 'king', color: 'black', position: { row: 0, col: 4 } },
+  { type: 'bishop', color: 'black', position: { row: 0, col: 5 } },
+  { type: 'knight', color: 'black', position: { row: 0, col: 6 } },
+  { type: 'rook', color: 'black', position: { row: 0, col: 7 } },
+  { type: 'pawn', color: 'black', position: { row: 1, col: 0 } },
+  { type: 'pawn', color: 'black', position: { row: 1, col: 1 } },
+  { type: 'pawn', color: 'black', position: { row: 1, col: 2 } },
+  { type: 'pawn', color: 'black', position: { row: 1, col: 3 } },
+  { type: 'pawn', color: 'black', position: { row: 1, col: 4 } },
+  { type: 'pawn', color: 'black', position: { row: 1, col: 5 } },
+  { type: 'pawn', color: 'black', position: { row: 1, col: 6 } },
+  { type: 'pawn', color: 'black', position: { row: 1, col: 7 } },
+];
+
 export const initializeBoard = (): ChessBoard => {
-  const pieces: Piece[] = [];
-
-  // Initialize pawns
-  for (let col = 0; col < BOARD_SIZE; col++) {
-    pieces.push({
-      type: 'pawn',
-      color: 'white',
-      position: { row: 6, col },
-      hasMoved: false
-    });
-    pieces.push({
-      type: 'pawn',
-      color: 'black',
-      position: { row: 1, col },
-      hasMoved: false
-    });
-  }
-
-  // Initialize rooks
-  pieces.push({ type: 'rook', color: 'white', position: { row: 7, col: 0 }, hasMoved: false });
-  pieces.push({ type: 'rook', color: 'white', position: { row: 7, col: 7 }, hasMoved: false });
-  pieces.push({ type: 'rook', color: 'black', position: { row: 0, col: 0 }, hasMoved: false });
-  pieces.push({ type: 'rook', color: 'black', position: { row: 0, col: 7 }, hasMoved: false });
-
-  // Initialize knights
-  pieces.push({ type: 'knight', color: 'white', position: { row: 7, col: 1 } });
-  pieces.push({ type: 'knight', color: 'white', position: { row: 7, col: 6 } });
-  pieces.push({ type: 'knight', color: 'black', position: { row: 0, col: 1 } });
-  pieces.push({ type: 'knight', color: 'black', position: { row: 0, col: 6 } });
-
-  // Initialize bishops
-  pieces.push({ type: 'bishop', color: 'white', position: { row: 7, col: 2 } });
-  pieces.push({ type: 'bishop', color: 'white', position: { row: 7, col: 5 } });
-  pieces.push({ type: 'bishop', color: 'black', position: { row: 0, col: 2 } });
-  pieces.push({ type: 'bishop', color: 'black', position: { row: 0, col: 5 } });
-
-  // Initialize queens
-  pieces.push({ type: 'queen', color: 'white', position: { row: 7, col: 3 } });
-  pieces.push({ type: 'queen', color: 'black', position: { row: 0, col: 3 } });
-
-  // Initialize kings
-  pieces.push({ type: 'king', color: 'white', position: { row: 7, col: 4 }, hasMoved: false });
-  pieces.push({ type: 'king', color: 'black', position: { row: 0, col: 4 }, hasMoved: false });
-
+  const pieces = [...initialPieces()];
   return {
     pieces,
     selectedPiece: null,
@@ -56,382 +45,375 @@ export const initializeBoard = (): ChessBoard => {
     currentTurn: 'white',
     isCheck: false,
     isCheckmate: false,
-    capturedPieces: []
+    capturedPieces: [],
+    moveHistory: [],
   };
 };
 
-// Find a piece at a specific position
 export const getPieceAtPosition = (board: ChessBoard, position: Position): Piece | undefined => {
-  return board.pieces.find(piece => 
-    piece.position.row === position.row && piece.position.col === position.col
-  );
+  return board.pieces.find(p => p.position.row === position.row && p.position.col === position.col);
 };
 
-// Check if a position is within the board boundaries
-export const isPositionWithinBoard = (position: Position): boolean => {
-  return position.row >= 0 && position.row < BOARD_SIZE && 
-         position.col >= 0 && position.col < BOARD_SIZE;
+export const isValidPosition = (position: Position): boolean => {
+  return position.row >= 0 && position.row < 8 && position.col >= 0 && position.col < 8;
 };
 
-// Check if a position is occupied by a piece of a specific color
-export const isPositionOccupiedByColor = (board: ChessBoard, position: Position, color: PieceColor): boolean => {
-  const piece = getPieceAtPosition(board, position);
-  return piece !== undefined && piece.color === color;
-};
-
-// Get all possible moves for a pawn
-const getPawnMoves = (board: ChessBoard, piece: Piece): Position[] => {
-  const moves: Position[] = [];
-  const direction = piece.color === 'white' ? -1 : 1;
-  const startRow = piece.color === 'white' ? 6 : 1;
-  
-  // Forward move
-  const forwardPos = { row: piece.position.row + direction, col: piece.position.col };
-  if (isPositionWithinBoard(forwardPos) && !getPieceAtPosition(board, forwardPos)) {
-    moves.push(forwardPos);
-    
-    // Double forward move if pawn hasn't moved yet
-    if (piece.position.row === startRow) {
-      const doubleForwardPos = { row: piece.position.row + (2 * direction), col: piece.position.col };
-      if (!getPieceAtPosition(board, doubleForwardPos)) {
-        moves.push(doubleForwardPos);
-      }
-    }
-  }
-  
-  // Diagonal captures
-  const captureMoves = [
-    { row: piece.position.row + direction, col: piece.position.col - 1 },
-    { row: piece.position.row + direction, col: piece.position.col + 1 }
-  ];
-  
-  captureMoves.forEach(pos => {
-    if (isPositionWithinBoard(pos)) {
-      const targetPiece = getPieceAtPosition(board, pos);
-      if (targetPiece && targetPiece.color !== piece.color) {
-        moves.push(pos);
-      }
-    }
-  });
-  
-  return moves;
-};
-
-// Get all possible moves for a rook
-const getRookMoves = (board: ChessBoard, piece: Piece): Position[] => {
-  const moves: Position[] = [];
-  const directions = [
-    { row: -1, col: 0 }, // up
-    { row: 1, col: 0 },  // down
-    { row: 0, col: -1 }, // left
-    { row: 0, col: 1 }   // right
-  ];
-  
-  directions.forEach(dir => {
-    let currentPos = { ...piece.position };
-    
-    while (true) {
-      currentPos = { row: currentPos.row + dir.row, col: currentPos.col + dir.col };
-      
-      if (!isPositionWithinBoard(currentPos)) break;
-      
-      const targetPiece = getPieceAtPosition(board, currentPos);
-      if (!targetPiece) {
-        moves.push(currentPos);
-      } else {
-        if (targetPiece.color !== piece.color) {
-          moves.push(currentPos);
-        }
-        break;
-      }
-    }
-  });
-  
-  return moves;
-};
-
-// Get all possible moves for a knight
-const getKnightMoves = (board: ChessBoard, piece: Piece): Position[] => {
-  const moves: Position[] = [];
-  const knightMoves = [
-    { row: -2, col: -1 }, { row: -2, col: 1 },
-    { row: -1, col: -2 }, { row: -1, col: 2 },
-    { row: 1, col: -2 }, { row: 1, col: 2 },
-    { row: 2, col: -1 }, { row: 2, col: 1 }
-  ];
-  
-  knightMoves.forEach(move => {
-    const targetPos = { 
-      row: piece.position.row + move.row, 
-      col: piece.position.col + move.col 
-    };
-    
-    if (isPositionWithinBoard(targetPos)) {
-      const targetPiece = getPieceAtPosition(board, targetPos);
-      if (!targetPiece || targetPiece.color !== piece.color) {
-        moves.push(targetPos);
-      }
-    }
-  });
-  
-  return moves;
-};
-
-// Get all possible moves for a bishop
-const getBishopMoves = (board: ChessBoard, piece: Piece): Position[] => {
-  const moves: Position[] = [];
-  const directions = [
-    { row: -1, col: -1 }, // up-left
-    { row: -1, col: 1 },  // up-right
-    { row: 1, col: -1 },  // down-left
-    { row: 1, col: 1 }    // down-right
-  ];
-  
-  directions.forEach(dir => {
-    let currentPos = { ...piece.position };
-    
-    while (true) {
-      currentPos = { row: currentPos.row + dir.row, col: currentPos.col + dir.col };
-      
-      if (!isPositionWithinBoard(currentPos)) break;
-      
-      const targetPiece = getPieceAtPosition(board, currentPos);
-      if (!targetPiece) {
-        moves.push(currentPos);
-      } else {
-        if (targetPiece.color !== piece.color) {
-          moves.push(currentPos);
-        }
-        break;
-      }
-    }
-  });
-  
-  return moves;
-};
-
-// Get all possible moves for a queen (combination of rook and bishop)
-const getQueenMoves = (board: ChessBoard, piece: Piece): Position[] => {
-  return [
-    ...getRookMoves(board, piece),
-    ...getBishopMoves(board, piece)
-  ];
-};
-
-// Get all possible moves for a king
-const getKingMoves = (board: ChessBoard, piece: Piece): Position[] => {
-  const moves: Position[] = [];
-  const kingMoves = [
-    { row: -1, col: -1 }, { row: -1, col: 0 }, { row: -1, col: 1 },
-    { row: 0, col: -1 }, { row: 0, col: 1 },
-    { row: 1, col: -1 }, { row: 1, col: 0 }, { row: 1, col: 1 }
-  ];
-  
-  kingMoves.forEach(move => {
-    const targetPos = { 
-      row: piece.position.row + move.row, 
-      col: piece.position.col + move.col 
-    };
-    
-    if (isPositionWithinBoard(targetPos)) {
-      const targetPiece = getPieceAtPosition(board, targetPos);
-      if (!targetPiece || targetPiece.color !== piece.color) {
-        moves.push(targetPos);
-      }
-    }
-  });
-  
-  return moves;
-};
-
-// Get all valid moves for a specific piece
 export const getValidMovesForPiece = (board: ChessBoard, piece: Piece): Position[] => {
-  let moves: Position[] = [];
-  
   switch (piece.type) {
     case 'pawn':
-      moves = getPawnMoves(board, piece);
-      break;
+      return getValidMovesForPawn(board, piece);
     case 'rook':
-      moves = getRookMoves(board, piece);
-      break;
+      return getValidMovesForRook(board, piece);
     case 'knight':
-      moves = getKnightMoves(board, piece);
-      break;
+      return getValidMovesForKnight(board, piece);
     case 'bishop':
-      moves = getBishopMoves(board, piece);
-      break;
+      return getValidMovesForBishop(board, piece);
     case 'queen':
-      moves = getQueenMoves(board, piece);
-      break;
+      return getValidMovesForQueen(board, piece);
     case 'king':
-      moves = getKingMoves(board, piece);
-      break;
-  }
-  
-  // Filter out moves that would put the king in check
-  return moves.filter(move => !wouldMoveResultInCheck(board, piece, move));
-};
-
-// Check if a move would result in the king being in check
-export const wouldMoveResultInCheck = (board: ChessBoard, piece: Piece, targetPosition: Position): boolean => {
-  // Create a temporary board to simulate the move
-  const tempBoard: ChessBoard = JSON.parse(JSON.stringify(board));
-  const tempPiece = tempBoard.pieces.find(p => 
-    p.position.row === piece.position.row && p.position.col === piece.position.col
-  );
-  
-  if (!tempPiece) return false;
-  
-  // Find and remove the captured piece if any
-  const capturedPieceIndex = tempBoard.pieces.findIndex(p => 
-    p.position.row === targetPosition.row && p.position.col === targetPosition.col
-  );
-  
-  if (capturedPieceIndex >= 0) {
-    tempBoard.pieces.splice(capturedPieceIndex, 1);
-  }
-  
-  // Update the position of the moved piece
-  tempPiece.position = { ...targetPosition };
-  
-  // Find the king of the player who just moved
-  const king = tempBoard.pieces.find(p => p.type === 'king' && p.color === piece.color);
-  
-  if (!king) return false;
-  
-  // Check if any opponent piece can capture the king
-  return tempBoard.pieces.some(p => {
-    if (p.color === piece.color) return false;
-    
-    let opponentMoves: Position[] = [];
-    switch (p.type) {
-      case 'pawn':
-        opponentMoves = getPawnMoves(tempBoard, p);
-        break;
-      case 'rook':
-        opponentMoves = getRookMoves(tempBoard, p);
-        break;
-      case 'knight':
-        opponentMoves = getKnightMoves(tempBoard, p);
-        break;
-      case 'bishop':
-        opponentMoves = getBishopMoves(tempBoard, p);
-        break;
-      case 'queen':
-        opponentMoves = getQueenMoves(tempBoard, p);
-        break;
-      case 'king':
-        opponentMoves = getKingMoves(tempBoard, p);
-        break;
-    }
-    
-    return opponentMoves.some(m => m.row === king.position.row && m.col === king.position.col);
-  });
-};
-
-// Check if the current player is in check
-export const isKingInCheck = (board: ChessBoard, color: PieceColor): boolean => {
-  // Find the king
-  const king = board.pieces.find(p => p.type === 'king' && p.color === color);
-  
-  if (!king) return false;
-  
-  // Check if any opponent piece can capture the king
-  return board.pieces.some(piece => {
-    if (piece.color === color) return false;
-    
-    const moves = getMovesWithoutCheckFilter(board, piece);
-    return moves.some(move => 
-      move.row === king.position.row && move.col === king.position.col
-    );
-  });
-};
-
-// Get moves without the check filter for the isKingInCheck function
-const getMovesWithoutCheckFilter = (board: ChessBoard, piece: Piece): Position[] => {
-  switch (piece.type) {
-    case 'pawn':
-      return getPawnMoves(board, piece);
-    case 'rook':
-      return getRookMoves(board, piece);
-    case 'knight':
-      return getKnightMoves(board, piece);
-    case 'bishop':
-      return getBishopMoves(board, piece);
-    case 'queen':
-      return getQueenMoves(board, piece);
-    case 'king':
-      return getKingMoves(board, piece);
+      return getValidMovesForKing(board, piece);
     default:
       return [];
   }
 };
 
-// Check if the current player is in checkmate
-export const isKingInCheckmate = (board: ChessBoard, color: PieceColor): boolean => {
-  // If not in check, can't be in checkmate
-  if (!isKingInCheck(board, color)) return false;
-  
-  // Find all pieces of the current player
-  const playerPieces = board.pieces.filter(p => p.color === color);
-  
-  // Check if any piece can make a move that gets out of check
-  return !playerPieces.some(piece => {
-    const validMoves = getValidMovesForPiece(board, piece);
-    return validMoves.length > 0;
+const getValidMovesForPawn = (board: ChessBoard, piece: Piece): Position[] => {
+  const { row, col } = piece.position;
+  const direction = piece.color === 'white' ? -1 : 1;
+  const validMoves: Position[] = [];
+
+  // One square forward
+  const oneSquareForward: Position = { row: row + direction, col };
+  if (isValidPosition(oneSquareForward) && !getPieceAtPosition(board, oneSquareForward)) {
+    validMoves.push(oneSquareForward);
+
+    // Two squares forward on first move
+    if (!piece.hasMoved) {
+      const twoSquaresForward: Position = { row: row + 2 * direction, col };
+      if (isValidPosition(twoSquaresForward) && !getPieceAtPosition(board, twoSquaresForward) && !getPieceAtPosition(board, oneSquareForward)) {
+        validMoves.push(twoSquaresForward);
+      }
+    }
+  }
+
+  // Captures
+  const capturePositions: Position[] = [
+    { row: row + direction, col: col + 1 },
+    { row: row + direction, col: col - 1 }
+  ];
+
+  capturePositions.forEach(capturePosition => {
+    if (isValidPosition(capturePosition)) {
+      const pieceAtCapturePosition = getPieceAtPosition(board, capturePosition);
+      if (pieceAtCapturePosition && pieceAtCapturePosition.color !== piece.color) {
+        validMoves.push(capturePosition);
+      }
+    }
   });
+
+  return validMoves;
 };
 
-// Make a move on the board
-export const makeMove = (board: ChessBoard, from: Position, to: Position): ChessBoard => {
-  const updatedBoard = JSON.parse(JSON.stringify(board));
-  
-  // Find the piece to move
-  const pieceIndex = updatedBoard.pieces.findIndex(p => 
-    p.position.row === from.row && p.position.col === from.col
-  );
-  
-  if (pieceIndex === -1) return updatedBoard;
-  
-  const piece = updatedBoard.pieces[pieceIndex];
-  
-  // Find and remove the captured piece if any
-  const capturedPieceIndex = updatedBoard.pieces.findIndex(p => 
-    p.position.row === to.row && p.position.col === to.col
-  );
-  
-  if (capturedPieceIndex >= 0) {
-    updatedBoard.capturedPieces.push(updatedBoard.pieces[capturedPieceIndex]);
-    updatedBoard.pieces.splice(capturedPieceIndex, 1);
-  }
-  
-  // Update the position of the moved piece
-  piece.position = { ...to };
-  piece.hasMoved = true;
-  
-  // Switch turns
-  updatedBoard.currentTurn = updatedBoard.currentTurn === 'white' ? 'black' : 'white';
-  
-  // Check if the opponent is in check or checkmate
-  const opponentColor = piece.color === 'white' ? 'black' : 'white';
-  updatedBoard.isCheck = isKingInCheck(updatedBoard, opponentColor);
-  
-  if (updatedBoard.isCheck) {
-    updatedBoard.isCheckmate = isKingInCheckmate(updatedBoard, opponentColor);
-  } else {
-    updatedBoard.isCheckmate = false;
-  }
-  
-  updatedBoard.selectedPiece = null;
-  updatedBoard.validMoves = [];
-  
-  return updatedBoard;
+const getValidMovesForRook = (board: ChessBoard, piece: Piece): Position[] => {
+  return getValidMovesForStraightLinePiece(board, piece, 1);
 };
 
-// Convert board position to algebraic notation
-export const toAlgebraicNotation = (position: Position): string => {
-  const file = String.fromCharCode(97 + position.col); // 'a' through 'h'
-  const rank = 8 - position.row; // 1 through 8
-  return `${file}${rank}`;
+const getValidMovesForBishop = (board: ChessBoard, piece: Piece): Position[] => {
+  return getValidMovesForDiagonalPiece(board, piece, 1);
+};
+
+const getValidMovesForQueen = (board: ChessBoard, piece: Piece): Position[] => {
+  return [
+    ...getValidMovesForStraightLinePiece(board, piece, 1),
+    ...getValidMovesForDiagonalPiece(board, piece, 1)
+  ];
+};
+
+const getValidMovesForKnight = (board: ChessBoard, piece: Piece): Position[] => {
+  const { row, col } = piece.position;
+  const validMoves: Position[] = [];
+
+  const possibleMoves: Position[] = [
+    { row: row + 2, col: col + 1 },
+    { row: row + 2, col: col - 1 },
+    { row: row - 2, col: col + 1 },
+    { row: row - 2, col: col - 1 },
+    { row: row + 1, col: col + 2 },
+    { row: row + 1, col: col - 2 },
+    { row: row - 1, col: col + 2 },
+    { row: row - 1, col: col - 2 }
+  ];
+
+  possibleMoves.forEach(move => {
+    if (isValidPosition(move)) {
+      const pieceAtPosition = getPieceAtPosition(board, move);
+      if (!pieceAtPosition || pieceAtPosition.color !== piece.color) {
+        validMoves.push(move);
+      }
+    }
+  });
+
+  return validMoves;
+};
+
+const getValidMovesForKing = (board: ChessBoard, piece: Piece): Position[] => {
+  const { row, col } = piece.position;
+  const validMoves: Position[] = [];
+
+  const possibleMoves: Position[] = [
+    { row: row + 1, col },
+    { row: row - 1, col },
+    { row, col: col + 1 },
+    { row, col: col - 1 },
+    { row: row + 1, col: col + 1 },
+    { row: row + 1, col: col - 1 },
+    { row: row - 1, col: col + 1 },
+    { row: row - 1, col: col - 1 }
+  ];
+
+  possibleMoves.forEach(move => {
+    if (isValidPosition(move)) {
+      const pieceAtPosition = getPieceAtPosition(board, move);
+      if (!pieceAtPosition || pieceAtPosition.color !== piece.color) {
+        validMoves.push(move);
+      }
+    }
+  });
+
+  return validMoves;
+};
+
+const getValidMovesForStraightLinePiece = (board: ChessBoard, piece: Piece, distance: number): Position[] => {
+  const { row, col } = piece.position;
+  const validMoves: Position[] = [];
+
+  // Directions: up, down, left, right
+  const directions = [
+    { row: -1, col: 0 },  // Up
+    { row: 1, col: 0 },   // Down
+    { row: 0, col: -1 },  // Left
+    { row: 0, col: 1 }   // Right
+  ];
+
+  directions.forEach(direction => {
+    for (let i = 1; i <= 7; i++) {
+      const newPosition: Position = { row: row + i * direction.row, col: col + i * direction.col };
+      if (!isValidPosition(newPosition)) break;
+
+      const pieceAtPosition = getPieceAtPosition(board, newPosition);
+      if (!pieceAtPosition) {
+        validMoves.push(newPosition);
+      } else {
+        if (pieceAtPosition.color !== piece.color) {
+          validMoves.push(newPosition);
+        }
+        break;
+      }
+    }
+  });
+
+  return validMoves;
+};
+
+const getValidMovesForDiagonalPiece = (board: ChessBoard, piece: Piece, distance: number): Position[] => {
+  const { row, col } = piece.position;
+  const validMoves: Position[] = [];
+
+  // Directions: up-left, up-right, down-left, down-right
+  const directions = [
+    { row: -1, col: -1 }, // Up-left
+    { row: -1, col: 1 },  // Up-right
+    { row: 1, col: -1 },  // Down-left
+    { row: 1, col: 1 }   // Down-right
+  ];
+
+  directions.forEach(direction => {
+    for (let i = 1; i <= 7; i++) {
+      const newPosition: Position = { row: row + i * direction.row, col: col + i * direction.col };
+      if (!isValidPosition(newPosition)) break;
+
+      const pieceAtPosition = getPieceAtPosition(board, newPosition);
+      if (!pieceAtPosition) {
+        validMoves.push(newPosition);
+      } else {
+        if (pieceAtPosition.color !== piece.color) {
+          validMoves.push(newPosition);
+        }
+        break;
+      }
+    }
+  });
+
+  return validMoves;
+};
+
+const isKingInCheck = (board: ChessBoard, kingColor: PieceColor): boolean => {
+  const king = board.pieces.find(piece => piece.type === 'king' && piece.color === kingColor);
+
+  if (!king) {
+    return false;
+  }
+
+  // Check if any opponent piece can attack the king
+  for (const piece of board.pieces) {
+    if (piece.color !== kingColor) {
+      const validMoves = getValidMovesForPiece(board, piece);
+      if (validMoves.some(move => move.row === king.position.row && move.col === king.position.col)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+};
+
+const isCheckmate = (board: ChessBoard, kingColor: PieceColor): boolean => {
+  const king = board.pieces.find(piece => piece.type === 'king' && piece.color === kingColor);
+
+  if (!king) {
+    return false;
+  }
+
+  // 1. Check if the king is currently in check
+  if (!isKingInCheck(board, kingColor)) {
+    return false;
+  }
+
+  // 2. Check if the king has any legal moves to escape check
+  const kingMoves = getValidMovesForKing(board, king);
+  for (const move of kingMoves) {
+    const tempBoard = makeMove(board, king.position, move);
+    if (!isKingInCheck(tempBoard, kingColor)) {
+      return false;
+    }
+  }
+
+  // 3. Check if any other piece can block the check or capture the attacking piece
+  for (const piece of board.pieces) {
+    if (piece.color === kingColor && piece.type !== 'king') {
+      const validMoves = getValidMovesForPiece(board, piece);
+      for (const move of validMoves) {
+        const tempBoard = makeMove(board, piece.position, move);
+        if (!isKingInCheck(tempBoard, kingColor)) {
+          return false;
+        }
+      }
+    }
+  }
+
+  return true;
+};
+
+export const makeMove = (
+  board: ChessBoard,
+  fromPosition: Position,
+  toPosition: Position
+): ChessBoard => {
+  // If the 'from' position is the same as the 'to' position, return the board without changes
+  if (fromPosition.row === toPosition.row && fromPosition.col === toPosition.col) {
+    return board;
+  }
+  
+  // Create a copy of the board's pieces
+  const newPieces = [...board.pieces];
+  
+  // Find the piece that's moving
+  const pieceIndex = newPieces.findIndex(
+    p => p.position.row === fromPosition.row && p.position.col === fromPosition.col
+  );
+  
+  if (pieceIndex === -1) {
+    return board; // No piece found at the starting position
+  }
+  
+  const piece = { ...newPieces[pieceIndex] };
+  
+  // Check if there's a capture
+  const capturedPieceIndex = newPieces.findIndex(
+    p => p.position.row === toPosition.row && p.position.col === toPosition.col
+  );
+  
+  let capturedPiece: Piece | undefined;
+  let newCapturedPieces = [...board.capturedPieces];
+  
+  if (capturedPieceIndex !== -1) {
+    capturedPiece = { ...newPieces[capturedPieceIndex] };
+    newCapturedPieces.push(capturedPiece);
+    newPieces.splice(capturedPieceIndex, 1); // Remove the captured piece
+  }
+  
+  // Special move handling for castling
+  const isCastling = piece.type === 'king' && Math.abs(fromPosition.col - toPosition.col) > 1;
+  
+  if (isCastling) {
+    // Determine which rook to move
+    const isKingsideCastle = toPosition.col > fromPosition.col;
+    const rookCol = isKingsideCastle ? 7 : 0;
+    const newRookCol = isKingsideCastle ? 5 : 3;
+    
+    const rookIndex = newPieces.findIndex(
+      p => p.type === 'rook' && 
+           p.color === piece.color && 
+           p.position.row === fromPosition.row && 
+           p.position.col === rookCol
+    );
+    
+    if (rookIndex !== -1) {
+      // Move the rook
+      newPieces[rookIndex] = {
+        ...newPieces[rookIndex],
+        position: { row: fromPosition.row, col: newRookCol },
+        hasMoved: true
+      };
+    }
+  }
+  
+  // Update the piece's position
+  newPieces[pieceIndex] = {
+    ...piece,
+    position: toPosition,
+    hasMoved: true
+  };
+  
+  // Create new board state
+  const newTurn = board.currentTurn === 'white' ? 'black' : 'white';
+  const newBoard = {
+    pieces: newPieces,
+    selectedPiece: null,
+    validMoves: [],
+    currentTurn: newTurn,
+    isCheck: false, // Will be updated
+    isCheckmate: false, // Will be updated
+    capturedPieces: newCapturedPieces,
+    moveHistory: [
+      ...board.moveHistory,
+      {
+        from: fromPosition,
+        to: toPosition,
+        piece: piece,
+        capturedPiece,
+        isCastling,
+      }
+    ]
+  };
+  
+  // Check if the opponent is in check or checkmate after this move
+  const isOpponentKingInCheck = isKingInCheck(newBoard, newTurn);
+  newBoard.isCheck = isOpponentKingInCheck;
+  
+  if (isOpponentKingInCheck) {
+    // Check if it's checkmate
+    newBoard.isCheckmate = isCheckmate(newBoard, newTurn);
+  }
+  
+  return newBoard;
+};
+
+export const toAlgebraicNotation = (move: { from: Position; to: Position }): string => {
+  const startFile = String.fromCharCode('a'.charCodeAt(0) + move.from.col);
+  const startRank = (8 - move.from.row).toString();
+  const endFile = String.fromCharCode('a'.charCodeAt(0) + move.to.col);
+  const endRank = (8 - move.to.row).toString();
+
+  return startFile + startRank + ' - ' + endFile + endRank;
 };

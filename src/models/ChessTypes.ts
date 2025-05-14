@@ -18,6 +18,7 @@ export interface ChessBoard {
   isCheck: boolean;
   isCheckmate: boolean;
   capturedPieces: Piece[];
+  moveHistory: Move[];
 }
 
 export interface Move {

@@ -8,6 +8,8 @@ import { initializeBoard, getPieceAtPosition, getValidMovesForPiece, makeMove } 
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import { useOnlineGame } from '@/hooks/useOnlineGame';
+import { Card, CardContent } from '@/components/ui/card';
+import { Copy, User, Users, Clock } from 'lucide-react';
 
 const OnlineGame: React.FC = () => {
   const { gameId } = useParams<{ gameId: string }>();
@@ -165,54 +167,101 @@ const OnlineGame: React.FC = () => {
     });
   };
   
+  // Copy game ID to clipboard
+  const copyGameId = () => {
+    if (gameId) {
+      navigator.clipboard.writeText(gameId);
+      toast({
+        title: "Game ID copied",
+        description: "The game ID has been copied to your clipboard.",
+      });
+    }
+  };
+  
   // Display board with proper orientation based on player color
   const flippedBoard = playerColor === 'black';
   
+  // Handle resignation
+  const handleResign = () => {
+    toast({
+      title: "Game Forfeit",
+      description: `You resigned the game. ${playerColor === 'white' ? 'Black' : 'White'} wins.`,
+      variant: "destructive"
+    });
+    // In a real implementation, you would update the server about resignation
+  };
+  
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-chess-background p-4">
-      <div className="mb-6 text-center">
-        <h1 className="text-2xl font-bold text-white mb-2">Online Chess Game</h1>
-        <div className="text-neutral-400 text-sm mb-4">Game Code: <span className="font-mono text-white">{gameId}</span></div>
+    <div className="min-h-screen flex flex-col items-center bg-chess-background p-4">
+      <div className="mb-6 w-full max-w-6xl">
+        <div className="flex flex-wrap justify-between items-center mb-4">
+          <h1 className="text-2xl font-bold text-white">Online Chess Game</h1>
+          <div className="flex items-center">
+            <div className="flex items-center mr-4 bg-neutral-800 py-1 px-3 rounded">
+              <span className="text-neutral-400 text-sm mr-2">Game ID:</span>
+              <span className="font-mono text-white">{gameId}</span>
+              <Button variant="ghost" size="icon" className="ml-1 h-6 w-6" onClick={copyGameId}>
+                <Copy className="h-3 w-3" />
+              </Button>
+            </div>
+            
+            <Button 
+              variant="outline" 
+              size="sm"
+              className="mr-2"
+              onClick={() => navigate('/multiplayer')}
+            >
+              Lobby
+            </Button>
+            
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => navigate('/')}
+            >
+              Home
+            </Button>
+          </div>
+        </div>
         
         {waitingForOpponent ? (
-          <div className="bg-neutral-800 p-3 rounded-lg text-amber-500 mb-4">
+          <div className="bg-neutral-800 p-3 rounded-lg text-amber-500 mb-4 flex items-center">
+            <Clock className="mr-2 h-4 w-4 animate-pulse" />
             Waiting for opponent to join...
           </div>
         ) : !opponentConnected ? (
-          <div className="bg-neutral-800 p-3 rounded-lg text-red-500 mb-4">
+          <div className="bg-neutral-800 p-3 rounded-lg text-red-500 mb-4 flex items-center">
+            <User className="mr-2 h-4 w-4" />
             Opponent disconnected. Waiting for reconnection...
           </div>
         ) : (
-          <div className="bg-neutral-800 p-3 rounded-lg text-emerald-500 mb-4">
-            {isTurnToPlay ? "Your turn" : "Opponent's turn"}
+          <div className="bg-neutral-800 p-3 rounded-lg mb-4 flex items-center">
+            <Users className="mr-2 h-4 w-4 text-emerald-500" />
+            <span className={`font-medium ${isTurnToPlay ? 'text-emerald-500' : 'text-amber-500'}`}>
+              {isTurnToPlay ? "Your turn" : "Opponent's turn"}
+            </span>
+            <span className="mx-2 text-neutral-500">•</span>
+            <span className="text-white">Playing as {playerColor === 'white' ? 'White' : 'Black'}</span>
           </div>
         )}
       </div>
       
-      <div className="flex flex-col items-center gap-6 w-full max-w-xl mx-auto">
-        <ChessBoard 
-          board={board} 
-          onSquareClick={handleSquareClick}
-          flipped={flippedBoard}
-        />
-        <GameInfo 
-          board={board} 
-          onReset={handleReset}
-        />
-        
-        <div className="flex gap-4 mt-4">
-          <Button 
-            variant="outline" 
-            onClick={() => navigate('/multiplayer')}
-          >
-            Back to Lobby
-          </Button>
-          <Button 
-            variant="outline"
-            onClick={() => navigate('/')}
-          >
-            Home
-          </Button>
+      <div className="flex flex-col lg:flex-row items-start gap-6 w-full max-w-6xl">
+        <div className="w-full lg:w-2/3">
+          <Card className="p-2 bg-neutral-900 border-neutral-700">
+            <ChessBoard 
+              board={board} 
+              onSquareClick={handleSquareClick}
+              flipped={flippedBoard}
+            />
+          </Card>
+        </div>
+        <div className="w-full lg:w-1/3">
+          <GameInfo 
+            board={board} 
+            onReset={handleReset}
+            onResign={handleResign}
+          />
         </div>
       </div>
     </div>
