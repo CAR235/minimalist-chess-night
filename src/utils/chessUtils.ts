@@ -1,4 +1,3 @@
-
 import { Piece, PieceType, PieceColor, Position, ChessBoard, Move } from "../models/ChessTypes";
 
 // Constants
@@ -14,43 +13,41 @@ export const initializeBoard = (): ChessBoard => {
       type: 'pawn',
       color: 'white',
       position: { row: 6, col },
-      hasMoved: false,
-      symbol: '♙'
+      hasMoved: false
     });
     pieces.push({
       type: 'pawn',
       color: 'black',
       position: { row: 1, col },
-      hasMoved: false,
-      symbol: '♟'
+      hasMoved: false
     });
   }
 
   // Initialize rooks
-  pieces.push({ type: 'rook', color: 'white', position: { row: 7, col: 0 }, hasMoved: false, symbol: '♖' });
-  pieces.push({ type: 'rook', color: 'white', position: { row: 7, col: 7 }, hasMoved: false, symbol: '♖' });
-  pieces.push({ type: 'rook', color: 'black', position: { row: 0, col: 0 }, hasMoved: false, symbol: '♜' });
-  pieces.push({ type: 'rook', color: 'black', position: { row: 0, col: 7 }, hasMoved: false, symbol: '♜' });
+  pieces.push({ type: 'rook', color: 'white', position: { row: 7, col: 0 }, hasMoved: false });
+  pieces.push({ type: 'rook', color: 'white', position: { row: 7, col: 7 }, hasMoved: false });
+  pieces.push({ type: 'rook', color: 'black', position: { row: 0, col: 0 }, hasMoved: false });
+  pieces.push({ type: 'rook', color: 'black', position: { row: 0, col: 7 }, hasMoved: false });
 
   // Initialize knights
-  pieces.push({ type: 'knight', color: 'white', position: { row: 7, col: 1 }, symbol: '♘' });
-  pieces.push({ type: 'knight', color: 'white', position: { row: 7, col: 6 }, symbol: '♘' });
-  pieces.push({ type: 'knight', color: 'black', position: { row: 0, col: 1 }, symbol: '♞' });
-  pieces.push({ type: 'knight', color: 'black', position: { row: 0, col: 6 }, symbol: '♞' });
+  pieces.push({ type: 'knight', color: 'white', position: { row: 7, col: 1 } });
+  pieces.push({ type: 'knight', color: 'white', position: { row: 7, col: 6 } });
+  pieces.push({ type: 'knight', color: 'black', position: { row: 0, col: 1 } });
+  pieces.push({ type: 'knight', color: 'black', position: { row: 0, col: 6 } });
 
   // Initialize bishops
-  pieces.push({ type: 'bishop', color: 'white', position: { row: 7, col: 2 }, symbol: '♗' });
-  pieces.push({ type: 'bishop', color: 'white', position: { row: 7, col: 5 }, symbol: '♗' });
-  pieces.push({ type: 'bishop', color: 'black', position: { row: 0, col: 2 }, symbol: '♝' });
-  pieces.push({ type: 'bishop', color: 'black', position: { row: 0, col: 5 }, symbol: '♝' });
+  pieces.push({ type: 'bishop', color: 'white', position: { row: 7, col: 2 } });
+  pieces.push({ type: 'bishop', color: 'white', position: { row: 7, col: 5 } });
+  pieces.push({ type: 'bishop', color: 'black', position: { row: 0, col: 2 } });
+  pieces.push({ type: 'bishop', color: 'black', position: { row: 0, col: 5 } });
 
   // Initialize queens
-  pieces.push({ type: 'queen', color: 'white', position: { row: 7, col: 3 }, symbol: '♕' });
-  pieces.push({ type: 'queen', color: 'black', position: { row: 0, col: 3 }, symbol: '♛' });
+  pieces.push({ type: 'queen', color: 'white', position: { row: 7, col: 3 } });
+  pieces.push({ type: 'queen', color: 'black', position: { row: 0, col: 3 } });
 
   // Initialize kings
-  pieces.push({ type: 'king', color: 'white', position: { row: 7, col: 4 }, hasMoved: false, symbol: '♔' });
-  pieces.push({ type: 'king', color: 'black', position: { row: 0, col: 4 }, hasMoved: false, symbol: '♚' });
+  pieces.push({ type: 'king', color: 'white', position: { row: 7, col: 4 }, hasMoved: false });
+  pieces.push({ type: 'king', color: 'black', position: { row: 0, col: 4 }, hasMoved: false });
 
   return {
     pieces,

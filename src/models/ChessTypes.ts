@@ -8,7 +8,6 @@ export interface Piece {
   color: PieceColor;
   position: Position;
   hasMoved?: boolean;
-  symbol: string;
 }
 
 export interface ChessBoard {
